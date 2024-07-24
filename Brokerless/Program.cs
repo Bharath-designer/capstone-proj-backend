@@ -1,4 +1,7 @@
 
+using Brokerless.Context;
+using Microsoft.EntityFrameworkCore;
+
 namespace Brokerless
 {
     public class Program
@@ -10,6 +13,11 @@ namespace Brokerless
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+
+            builder.Services.AddDbContext<BrokerlessDBContext>(options =>
+            {
+                options.UseSqlServer(builder.Configuration.GetConnectionString("default"));
+            });
 
             var app = builder.Build();
 

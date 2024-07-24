@@ -31,6 +31,7 @@ This project seeks to remove the intermediary role traditionally linking buyers 
 - PhoneNumber
 - PhoneNumberVerified
 - Subscription
+- AvailableSellerDetails[]
 
 ### Property
 - PropertyType (Residential, Commercial, Product, Land)
@@ -51,12 +52,15 @@ This project seeks to remove the intermediary role traditionally linking buyers 
 - Status
 - Tags[]
 - PropertyFiles[]
-- UserId (FK)
+- SellerId (FK)
+- BuyerId (FK)
 
 ### HouseDetails
 - MeasurementUnit
 - Length
 - Width
+- Height
+- FloorCount
 - RoomCount
 - HallAndKitchen
 - Restrooms
