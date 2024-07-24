@@ -2,10 +2,23 @@
 
 This project seeks to remove the intermediary role traditionally linking buyers and sellers of residences, commercial spaces, used gadgets/products, and lands/plots.
 
-## Types of user
-- <b>Admin</b> - Will be verifying the properties uploaded by sellers, The product will be published once admins approve the listing.
+## Types of Users
+- **Admins**: Verify and approve property listings before they go live on the site.
+- **Users**: Can post, browse, and manage listings. They can also communicate with others and manage their subscriptions.
 
-- <b>User</b> - can buy, sell properties on this platform.
+
+### Key Features
+- **Property Listings**: Post and browse listings for residential and commercial properties, land, and used products.
+- **Detailed Information**: Each listing includes important details like location, price, and property features.
+- **Subscription Plans**: Choose a plan to get additional features and benefits, such as more listings or enhanced visibility.
+- **Chat and Transactions**: Communicate directly with others and manage your transactions on the platform.
+
+### Getting Started
+- **Sign Up**: Create an account as an Admin or User.
+- **Post or Browse**: List your properties or check out existing ones.
+- **Choose a Subscription**: Select a plan that fits your needs.
+- **Interact**: Use the chat feature to connect with others and manage your transactions.
+
 
 ## Entities
 
@@ -16,6 +29,7 @@ This project seeks to remove the intermediary role traditionally linking buyers 
 - Email
 - FullName
 - PhoneNumber
+- PhoneNumberVerified
 - Subscription
 
 ### Property
@@ -106,7 +120,9 @@ This project seeks to remove the intermediary role traditionally linking buyers 
 - ExpiresOn
 - AvailableListingCount
 - AvailableSellerViewCount
+- Validity
 - SubscriptionTemplateId (FK)
+- UserId (FK)
 
 ### SubscriptionTemplate
 - SubscriptionTemplateId 
@@ -130,3 +146,10 @@ This project seeks to remove the intermediary role traditionally linking buyers 
 - ChatReactionId
 - ReactedBy
 - Reaction
+
+### Transaction
+- TransactionId (PK)
+- Amount 
+- TransactionStatus (Pending,Failed, Completed)
+- SubsriptionTemplateId (FK)
+- UserId (FK)
