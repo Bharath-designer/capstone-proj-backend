@@ -16,19 +16,18 @@ This project seeks to remove the intermediary role traditionally linking buyers 
 - Email
 - FullName
 - PhoneNumber
+- Subscription
 
 ### Property
 - PropertyType (Residential, Commercial, Product, Land)
 - Category (House, Hostel) - Only for Residential 
 - ListingType (Sale, Rent)
-- Tags
 - LocationLat
 - LocationLon
 - City
 - State
 - Description
 - PriceNegotiable
-- Files
 - Price
 - PricePerUnit (sq.ft)
 - Rent 
@@ -36,6 +35,9 @@ This project seeks to remove the intermediary role traditionally linking buyers 
 - Deposit
 - PostedOn
 - Status
+- Tags[]
+- PropertyFiles[]
+- UserId (FK)
 
 ### HouseDetails
 - MeasurementUnit
@@ -49,7 +51,7 @@ This project seeks to remove the intermediary role traditionally linking buyers 
 - GatedSecurity
 - CarParking
 - FurnishingDetails
-
+- PropertyId (FK)
 
 ### HostelDetails
 - TypesOfRooms (Single, Double, Three, Four)
@@ -57,6 +59,7 @@ This project seeks to remove the intermediary role traditionally linking buyers 
 - Food
 - Wifi
 - GatedSecurity
+- PropertyId (FK)
 
 ### CommercialDetails 
 - CommercialType
@@ -69,15 +72,61 @@ This project seeks to remove the intermediary role traditionally linking buyers 
 - Restrooms
 - GatedSecurity
 - CarParking
+- PropertyId (FK)
 
 ### LandDetails
 - MeasurementUnit
 - Length
 - Width
-- ZoningType 
+- ZoningType (Residential, Commercial, Industrial, Agricultural)
+- PropertyId (FK)
 
 ### ProductDetails
 - ProductType (Electronics, Household, Furniture, HomeDecor, Fitness )
 - Manufacturer
 - WarrantyPeriod
 - WarrantyUnit
+- PropertyId (FK)
+
+
+### Tag
+- Tag (PK)
+- PropertyId (FK)
+
+### PropertyFiles
+- FileId (PK)
+- FileUrl
+- Type
+- Size
+- PropertyId
+
+### Subscription
+- SubscriptionId
+- SubscribedOn
+- ExpiresOn
+- AvailableListingCount
+- AvailableSellerViewCount
+- SubscriptionTemplateId (FK)
+
+### SubscriptionTemplate
+- SubscriptionTemplateId 
+- SubscriptionType
+- Description
+- MaxListingCount
+- MaxSellerViewCount
+- Validity
+
+
+### Chat
+- ChatId
+- SenderId
+- ReceiverId
+- Message
+- CreatedOn
+- MessageType (text, media)
+- ChatReactions[]
+
+### ChatReaction
+- ChatReactionId
+- ReactedBy
+- Reaction
