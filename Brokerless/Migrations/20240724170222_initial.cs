@@ -12,7 +12,7 @@ namespace Brokerless.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Chat",
+                name: "Chats",
                 columns: table => new
                 {
                     ChatId = table.Column<int>(type: "int", nullable: false)
@@ -23,11 +23,11 @@ namespace Brokerless.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Chat", x => x.ChatId);
+                    table.PrimaryKey("PK_Chats", x => x.ChatId);
                 });
 
             migrationBuilder.CreateTable(
-                name: "SubscriptionTemplate",
+                name: "SubscriptionTemplates",
                 columns: table => new
                 {
                     SubscriptionTemplateId = table.Column<int>(type: "int", nullable: false)
@@ -40,42 +40,42 @@ namespace Brokerless.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_SubscriptionTemplate", x => x.SubscriptionTemplateId);
+                    table.PrimaryKey("PK_SubscriptionTemplates", x => x.SubscriptionTemplateId);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Tag",
+                name: "Tags",
                 columns: table => new
                 {
                     TagValue = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Tag", x => x.TagValue);
+                    table.PrimaryKey("PK_Tags", x => x.TagValue);
                 });
 
             migrationBuilder.CreateTable(
-                name: "User",
+                name: "Users",
                 columns: table => new
                 {
                     UserId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    UserRole = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CreatedOn = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UserRole = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     FullName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CountryCode = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ProfileUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CountryCode = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     PhoneNumberVerified = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_User", x => x.UserId);
+                    table.PrimaryKey("PK_Users", x => x.UserId);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Conversation",
+                name: "Conversations",
                 columns: table => new
                 {
                     ConversationId = table.Column<int>(type: "int", nullable: false)
@@ -84,17 +84,17 @@ namespace Brokerless.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Conversation", x => x.ConversationId);
+                    table.PrimaryKey("PK_Conversations", x => x.ConversationId);
                     table.ForeignKey(
-                        name: "FK_Conversation_User_UserId",
+                        name: "FK_Conversations_Users_UserId",
                         column: x => x.UserId,
-                        principalTable: "User",
+                        principalTable: "Users",
                         principalColumn: "UserId",
                         onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Property",
+                name: "Properties",
                 columns: table => new
                 {
                     PropertyId = table.Column<int>(type: "int", nullable: false)
@@ -120,17 +120,17 @@ namespace Brokerless.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Property", x => x.PropertyId);
+                    table.PrimaryKey("PK_Properties", x => x.PropertyId);
                     table.ForeignKey(
-                        name: "FK_Property_User_SellerId",
+                        name: "FK_Properties_Users_SellerId",
                         column: x => x.SellerId,
-                        principalTable: "User",
+                        principalTable: "Users",
                         principalColumn: "UserId",
                         onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Transaction",
+                name: "Transactions",
                 columns: table => new
                 {
                     TransactionId = table.Column<string>(type: "nvarchar(450)", nullable: false),
@@ -143,23 +143,23 @@ namespace Brokerless.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Transaction", x => x.TransactionId);
+                    table.PrimaryKey("PK_Transactions", x => x.TransactionId);
                     table.ForeignKey(
-                        name: "FK_Transaction_SubscriptionTemplate_SubscriptionTemplateId",
+                        name: "FK_Transactions_SubscriptionTemplates_SubscriptionTemplateId",
                         column: x => x.SubscriptionTemplateId,
-                        principalTable: "SubscriptionTemplate",
+                        principalTable: "SubscriptionTemplates",
                         principalColumn: "SubscriptionTemplateId",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_Transaction_User_UserId",
+                        name: "FK_Transactions_Users_UserId",
                         column: x => x.UserId,
-                        principalTable: "User",
+                        principalTable: "Users",
                         principalColumn: "UserId",
                         onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
-                name: "UserSubscription",
+                name: "UserSubscriptions",
                 columns: table => new
                 {
                     UserSubscriptionId = table.Column<int>(type: "int", nullable: false)
@@ -174,17 +174,17 @@ namespace Brokerless.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_UserSubscription", x => x.UserSubscriptionId);
+                    table.PrimaryKey("PK_UserSubscriptions", x => x.UserSubscriptionId);
                     table.ForeignKey(
-                        name: "FK_UserSubscription_SubscriptionTemplate_SubscriptionTemplateId",
+                        name: "FK_UserSubscriptions_SubscriptionTemplates_SubscriptionTemplateId",
                         column: x => x.SubscriptionTemplateId,
-                        principalTable: "SubscriptionTemplate",
+                        principalTable: "SubscriptionTemplates",
                         principalColumn: "SubscriptionTemplateId",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_UserSubscription_User_UserId",
+                        name: "FK_UserSubscriptions_Users_UserId",
                         column: x => x.UserId,
-                        principalTable: "User",
+                        principalTable: "Users",
                         principalColumn: "UserId",
                         onDelete: ReferentialAction.Restrict);
                 });
@@ -200,15 +200,15 @@ namespace Brokerless.Migrations
                 {
                     table.PrimaryKey("PK_ConversationChat", x => new { x.ChatsChatId, x.ConversationId });
                     table.ForeignKey(
-                        name: "FK_ConversationChat_Chat_ChatsChatId",
+                        name: "FK_ConversationChat_Chats_ChatsChatId",
                         column: x => x.ChatsChatId,
-                        principalTable: "Chat",
+                        principalTable: "Chats",
                         principalColumn: "ChatId",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_ConversationChat_Conversation_ConversationId",
+                        name: "FK_ConversationChat_Conversations_ConversationId",
                         column: x => x.ConversationId,
-                        principalTable: "Conversation",
+                        principalTable: "Conversations",
                         principalColumn: "ConversationId",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -236,9 +236,9 @@ namespace Brokerless.Migrations
                 {
                     table.PrimaryKey("PK_CommercialDetails", x => x.CommercialDetailsId);
                     table.ForeignKey(
-                        name: "FK_CommercialDetails_Property_PropertyId",
+                        name: "FK_CommercialDetails_Properties_PropertyId",
                         column: x => x.PropertyId,
-                        principalTable: "Property",
+                        principalTable: "Properties",
                         principalColumn: "PropertyId",
                         onDelete: ReferentialAction.Restrict);
                 });
@@ -260,9 +260,9 @@ namespace Brokerless.Migrations
                 {
                     table.PrimaryKey("PK_HostelDetails", x => x.HostelId);
                     table.ForeignKey(
-                        name: "FK_HostelDetails_Property_PropertyId",
+                        name: "FK_HostelDetails_Properties_PropertyId",
                         column: x => x.PropertyId,
-                        principalTable: "Property",
+                        principalTable: "Properties",
                         principalColumn: "PropertyId",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -292,9 +292,9 @@ namespace Brokerless.Migrations
                 {
                     table.PrimaryKey("PK_HouseDetails", x => x.HouseDetailsId);
                     table.ForeignKey(
-                        name: "FK_HouseDetails_Property_PropertyId",
+                        name: "FK_HouseDetails_Properties_PropertyId",
                         column: x => x.PropertyId,
-                        principalTable: "Property",
+                        principalTable: "Properties",
                         principalColumn: "PropertyId",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -315,9 +315,9 @@ namespace Brokerless.Migrations
                 {
                     table.PrimaryKey("PK_LandDetails", x => x.LandDetailsId);
                     table.ForeignKey(
-                        name: "FK_LandDetails_Property_PropertyId",
+                        name: "FK_LandDetails_Properties_PropertyId",
                         column: x => x.PropertyId,
-                        principalTable: "Property",
+                        principalTable: "Properties",
                         principalColumn: "PropertyId",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -338,15 +338,15 @@ namespace Brokerless.Migrations
                 {
                     table.PrimaryKey("PK_ProductDetails", x => x.ProductDetailsId);
                     table.ForeignKey(
-                        name: "FK_ProductDetails_Property_PropertyId",
+                        name: "FK_ProductDetails_Properties_PropertyId",
                         column: x => x.PropertyId,
-                        principalTable: "Property",
+                        principalTable: "Properties",
                         principalColumn: "PropertyId",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "PropertyFile",
+                name: "PropertyFiles",
                 columns: table => new
                 {
                     FileId = table.Column<int>(type: "int", nullable: false)
@@ -358,11 +358,11 @@ namespace Brokerless.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_PropertyFile", x => x.FileId);
+                    table.PrimaryKey("PK_PropertyFiles", x => x.FileId);
                     table.ForeignKey(
-                        name: "FK_PropertyFile_Property_PropertyId",
+                        name: "FK_PropertyFiles_Properties_PropertyId",
                         column: x => x.PropertyId,
-                        principalTable: "Property",
+                        principalTable: "Properties",
                         principalColumn: "PropertyId",
                         onDelete: ReferentialAction.Restrict);
                 });
@@ -378,15 +378,15 @@ namespace Brokerless.Migrations
                 {
                     table.PrimaryKey("PK_PropertyTag", x => new { x.PropertiesPropertyId, x.TagsTagValue });
                     table.ForeignKey(
-                        name: "FK_PropertyTag_Property_PropertiesPropertyId",
+                        name: "FK_PropertyTag_Properties_PropertiesPropertyId",
                         column: x => x.PropertiesPropertyId,
-                        principalTable: "Property",
+                        principalTable: "Properties",
                         principalColumn: "PropertyId",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_PropertyTag_Tag_TagsTagValue",
+                        name: "FK_PropertyTag_Tags_TagsTagValue",
                         column: x => x.TagsTagValue,
-                        principalTable: "Tag",
+                        principalTable: "Tags",
                         principalColumn: "TagValue",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -398,14 +398,14 @@ namespace Brokerless.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Conversation_UserId",
-                table: "Conversation",
-                column: "UserId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_ConversationChat_ConversationId",
                 table: "ConversationChat",
                 column: "ConversationId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Conversations_UserId",
+                table: "Conversations",
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_HostelDetails_PropertyId",
@@ -432,13 +432,13 @@ namespace Brokerless.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Property_SellerId",
-                table: "Property",
+                name: "IX_Properties_SellerId",
+                table: "Properties",
                 column: "SellerId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_PropertyFile_PropertyId",
-                table: "PropertyFile",
+                name: "IX_PropertyFiles_PropertyId",
+                table: "PropertyFiles",
                 column: "PropertyId");
 
             migrationBuilder.CreateIndex(
@@ -447,23 +447,23 @@ namespace Brokerless.Migrations
                 column: "TagsTagValue");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Transaction_SubscriptionTemplateId",
-                table: "Transaction",
+                name: "IX_Transactions_SubscriptionTemplateId",
+                table: "Transactions",
                 column: "SubscriptionTemplateId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Transaction_UserId",
-                table: "Transaction",
+                name: "IX_Transactions_UserId",
+                table: "Transactions",
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_UserSubscription_SubscriptionTemplateId",
-                table: "UserSubscription",
+                name: "IX_UserSubscriptions_SubscriptionTemplateId",
+                table: "UserSubscriptions",
                 column: "SubscriptionTemplateId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_UserSubscription_UserId",
-                table: "UserSubscription",
+                name: "IX_UserSubscriptions_UserId",
+                table: "UserSubscriptions",
                 column: "UserId",
                 unique: true);
         }
@@ -490,34 +490,34 @@ namespace Brokerless.Migrations
                 name: "ProductDetails");
 
             migrationBuilder.DropTable(
-                name: "PropertyFile");
+                name: "PropertyFiles");
 
             migrationBuilder.DropTable(
                 name: "PropertyTag");
 
             migrationBuilder.DropTable(
-                name: "Transaction");
+                name: "Transactions");
 
             migrationBuilder.DropTable(
-                name: "UserSubscription");
+                name: "UserSubscriptions");
 
             migrationBuilder.DropTable(
-                name: "Chat");
+                name: "Chats");
 
             migrationBuilder.DropTable(
-                name: "Conversation");
+                name: "Conversations");
 
             migrationBuilder.DropTable(
-                name: "Property");
+                name: "Properties");
 
             migrationBuilder.DropTable(
-                name: "Tag");
+                name: "Tags");
 
             migrationBuilder.DropTable(
-                name: "SubscriptionTemplate");
+                name: "SubscriptionTemplates");
 
             migrationBuilder.DropTable(
-                name: "User");
+                name: "Users");
         }
     }
 }

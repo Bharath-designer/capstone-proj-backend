@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Brokerless.Migrations
 {
     [DbContext(typeof(BrokerlessDBContext))]
-    [Migration("20240724115430_initial")]
+    [Migration("20240724170222_initial")]
     partial class initial
     {
         /// <inheritdoc />
@@ -46,7 +46,7 @@ namespace Brokerless.Migrations
 
                     b.HasKey("ChatId");
 
-                    b.ToTable("Chat");
+                    b.ToTable("Chats");
                 });
 
             modelBuilder.Entity("Brokerless.Models.CommercialDetails", b =>
@@ -120,7 +120,7 @@ namespace Brokerless.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Conversation");
+                    b.ToTable("Conversations");
                 });
 
             modelBuilder.Entity("Brokerless.Models.HostelDetails", b =>
@@ -361,7 +361,7 @@ namespace Brokerless.Migrations
 
                     b.HasIndex("SellerId");
 
-                    b.ToTable("Property");
+                    b.ToTable("Properties");
                 });
 
             modelBuilder.Entity("Brokerless.Models.PropertyFile", b =>
@@ -390,7 +390,7 @@ namespace Brokerless.Migrations
 
                     b.HasIndex("PropertyId");
 
-                    b.ToTable("PropertyFile");
+                    b.ToTable("PropertyFiles");
                 });
 
             modelBuilder.Entity("Brokerless.Models.SubscriptionTemplate", b =>
@@ -420,7 +420,7 @@ namespace Brokerless.Migrations
 
                     b.HasKey("SubscriptionTemplateId");
 
-                    b.ToTable("SubscriptionTemplate");
+                    b.ToTable("SubscriptionTemplates");
                 });
 
             modelBuilder.Entity("Brokerless.Models.Tag", b =>
@@ -430,7 +430,7 @@ namespace Brokerless.Migrations
 
                     b.HasKey("TagValue");
 
-                    b.ToTable("Tag");
+                    b.ToTable("Tags");
                 });
 
             modelBuilder.Entity("Brokerless.Models.Transaction", b =>
@@ -464,7 +464,7 @@ namespace Brokerless.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Transaction");
+                    b.ToTable("Transactions");
                 });
 
             modelBuilder.Entity("Brokerless.Models.User", b =>
@@ -476,7 +476,6 @@ namespace Brokerless.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("UserId"));
 
                     b.Property<string>("CountryCode")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreatedOn")
@@ -491,7 +490,6 @@ namespace Brokerless.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PhoneNumber")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("PhoneNumberVerified")
@@ -507,7 +505,7 @@ namespace Brokerless.Migrations
 
                     b.HasKey("UserId");
 
-                    b.ToTable("User");
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("Brokerless.Models.UserSubscription", b =>
@@ -546,7 +544,7 @@ namespace Brokerless.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("UserSubscription");
+                    b.ToTable("UserSubscriptions");
                 });
 
             modelBuilder.Entity("ChatConversation", b =>
