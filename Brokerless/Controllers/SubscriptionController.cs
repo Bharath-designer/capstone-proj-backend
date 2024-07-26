@@ -70,7 +70,13 @@ namespace Brokerless.Controllers
             catch (Exception ex)
             {
                 await Console.Out.WriteLineAsync(ex.Message);
-                return StatusCode(StatusCodes.Status500InternalServerError, "Internal Server Error");
+                                var errorObject = new ErrorApiResponse
+                {
+                    ErrCode = 500,
+                    Message = "Internal Server Error"
+                };
+
+                return StatusCode(StatusCodes.Status500InternalServerError, errorObject);
             }
         }
     }

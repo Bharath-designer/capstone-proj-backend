@@ -1,4 +1,6 @@
-﻿using Brokerless.Enums;
+﻿using Brokerless.DTOs.User;
+using Brokerless.Enums;
+using Brokerless.Exceptions;
 using Brokerless.Interfaces.Repositories;
 using Brokerless.Interfaces.Services;
 using Brokerless.Models;
@@ -10,10 +12,12 @@ namespace Brokerless.Services
     {
         private readonly IUserRepository _userRepository;
         private readonly ISubscriptionTemplateRepository _subscriptionTemplateRepository;
+        private readonly IPropertyRepository _propertyRepository;
 
-        public UserService(IUserRepository userRepository, ISubscriptionTemplateRepository subscriptionTemplateRepository) {
+        public UserService(IUserRepository userRepository, ISubscriptionTemplateRepository subscriptionTemplateRepository, IPropertyRepository propertyRepository) {
             _userRepository = userRepository;
             _subscriptionTemplateRepository = subscriptionTemplateRepository;
+            _propertyRepository = propertyRepository;
         }
         public async Task<User> CreateUser(string email, string userName, string profilePic)
         {
@@ -98,6 +102,53 @@ namespace Brokerless.Services
             percentage = percentage * 0.80; // Deduction 20%
 
             return (int)(limitsRemaining * percentage);
+        }
+
+        public async Task UpdateUserMobileNumber(int userId, UserMobileNumberUpdateDTO userMobileNumberUpdateDTO)
+        {
+            User user = await _userRepository.GetById(userId);
+            if (user == null)
+            {
+                throw new UserNotFoundException();
+            }
+
+            user.PhoneNumber = userMobileNumberUpdateDTO.PhoneNumber;
+            user.CountryCode  = userMobileNumberUpdateDTO.CountryCode;
+            await _userRepository.Update(user);
+        }
+
+        public async Task VerifyMobileNumber(int userId, OtpDTO otpDTO)
+        {
+            User user = await _userRepository.GetById(userId);
+            if (user == null)
+            {
+                throw new UserNotFoundException();
+            }
+
+            string VALID_OTP = "0000";
+
+            if (otpDTO.OTP != VALID_OTP)
+            {
+                throw new InvalidOTPException();
+            }
+
+            user.PhoneNumberVerified = true;
+            await _userRepository.Update(user); 
+        }
+
+        public async Task CreateConversationWithPropertyOwner(int userId, CreateConversationDTO createConversationDTO)
+        {
+            PropertyUserViewed propertyViewedByUser = await _propertyRepository.GetPropertyWithViewedUserById(userId, (int)createConversationDTO.PropertyId);
+            
+            if (propertyViewedByUser == null)
+            {
+                throw new PropertyDetailsNotRequestedException();
+            }
+            
+            Property property = propertyViewedByUser.Property;
+
+            await Console.Out.WriteLineAsync(property.City);
+
         }
     }
 }

@@ -92,6 +92,11 @@ namespace Brokerless.Context
                 .HasForeignKey(c => c.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            modelBuilder.Entity<Conversation>()
+                .HasOne(c => c.ConversationWithUser)
+                .WithMany()
+                .HasForeignKey(c => c.ConversationWithUserId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<PropertyUserViewed>()
             .HasKey(pt => new { pt.UserId, pt.PropertyId});

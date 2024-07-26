@@ -3,7 +3,6 @@ using Brokerless.DTOs.Property;
 using Microsoft.AspNetCore.Mvc;
 using Brokerless.Exceptions;
 using Brokerless.Interfaces.Services;
-using Brokerless.Utilities;
 
 namespace Brokerless.Controllers
 {
@@ -18,10 +17,95 @@ namespace Brokerless.Controllers
             _propertyService = propertyService;
         }
 
+
+        [HttpGet]
+        public async Task<IActionResult> GetAllProperties([FromQuery] PropertySearchFilterDTO propertySearchFilterDTO)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+                    var customErrorResponse = new ErrorApiResponse
+                    {
+                        ErrCode = 1001,
+                        Message = "One or more validation errors occurred.",
+                        Error = errors
+                    };
+
+                    return BadRequest(customErrorResponse);
+                }
+
+                List<PropertyReturnDTO> data = await _propertyService.GetPropertiesWithFilters(propertySearchFilterDTO);
+                return Ok(data);
+            }
+            catch (Exception ex)
+            {
+                await Console.Out.WriteLineAsync(ex.Message);
+                                var errorObject = new ErrorApiResponse
+                {
+                    ErrCode = 500,
+                    Message = "Internal Server Error"
+                };
+
+                return StatusCode(StatusCodes.Status500InternalServerError, errorObject);
+            }
+        }
+
+
+        [HttpGet]
+        [Route("{propertyId}")]
+        public async Task<IActionResult> GetPropertyDetails([FromRoute] int propertyId)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+                    var customErrorResponse = new ErrorApiResponse
+                    {
+                        ErrCode = 1001,
+                        Message = "One or more validation errors occurred.",
+                        Error = errors
+                    };
+
+                    return BadRequest(customErrorResponse);
+                }
+
+                int userId = int.Parse(User.FindFirst("userId").Value.ToString());
+
+                PropertyReturnDTO data = await _propertyService.GetPropertyByIdForUser(userId, propertyId);
+                return Ok(data);
+            }
+            catch (PropertyNotFound ex)
+            {
+                await Console.Out.WriteLineAsync(ex.Message);
+                var errorObject = new ErrorApiResponse
+                {
+                    ErrCode = 1011,
+                    Message = ex.Message
+                };
+
+                return BadRequest(errorObject);
+            }
+            catch (Exception ex)
+            {
+                await Console.Out.WriteLineAsync(ex.Message);
+                var errorObject = new ErrorApiResponse
+                {
+                    ErrCode = 500,
+                    Message = "Internal Server Error"
+                };
+
+                return StatusCode(StatusCodes.Status500InternalServerError, errorObject);
+            }
+        }
+
         [HttpPost]
-        public async Task<IActionResult> CreateProperty(
+        [Route("house")]
+        public async Task<IActionResult> CreateHouseProperty(
             [FromForm]List<IFormFile> files,
-            [FromBody] BasePropertyDTO basePropertyDTO
+            [FromForm] HouseDetailsDTO basePropertyDTO
             )
         {
             try
@@ -39,29 +123,21 @@ namespace Brokerless.Controllers
                     return BadRequest(customErrorResponse);
                 }
 
-                //IFormCollection requestForm =  Request.Form;
-                //int UserId = int.Parse(User.FindFirst("userId").Value.ToString());
+                int UserId = int.Parse(User.FindFirst("userId").Value.ToString());
 
-                //await _propertyService.CreateProperty(UserId, requestForm, basePropertyDTO, files);
-
-
-                if (basePropertyDTO is ProductDetailsDTO childA)
-                {
-                    // Handle ChildDtoA
-                    await Console.Out.WriteLineAsync("Product");
-                }
-                else if (basePropertyDTO is LandDetailsDTO childB)
-                {
-                    // Handle ChildDtoB
-                    await Console.Out.WriteLineAsync("landddd");
-
-                }
+                await _propertyService.CreateProperty(UserId, basePropertyDTO, files);
 
                 return Ok();
+            }
+            catch(MobileNotVerifiedException ex)
+            {
+                var customErrorResponse = new ErrorApiResponse
+                {
+                    ErrCode = 1008,
+                    Message = ex.Message
+                };
 
-
-
-                return Ok();
+                return BadRequest(customErrorResponse);
             }
             catch (PropertyPostingLimitExceededException ex)
             {
@@ -87,7 +163,302 @@ namespace Brokerless.Controllers
             catch (Exception ex) 
             {
                 await Console.Out.WriteLineAsync(ex.Message);
-                return StatusCode(StatusCodes.Status500InternalServerError, "Internal Server Error");
+                                var errorObject = new ErrorApiResponse
+                {
+                    ErrCode = 500,
+                    Message = "Internal Server Error"
+                };
+
+                return StatusCode(StatusCodes.Status500InternalServerError, errorObject);
+            }
+        }
+
+
+        [HttpPost]
+        [Route("hostel")]
+        public async Task<IActionResult> CreateHostelProperty(
+            [FromForm] List<IFormFile> files,
+            [FromForm] HostelDetailsDTO basePropertyDTO
+            )
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+                    var customErrorResponse = new ErrorApiResponse
+                    {
+                        ErrCode = 1001,
+                        Message = "One or more validation errors occurred.",
+                        Error = errors
+                    };
+
+                    return BadRequest(customErrorResponse);
+                }
+
+                int UserId = int.Parse(User.FindFirst("userId").Value.ToString());
+
+                await _propertyService.CreateProperty(UserId, basePropertyDTO, files);
+
+                return Ok();
+            }
+            catch (MobileNotVerifiedException ex)
+            {
+                var customErrorResponse = new ErrorApiResponse
+                {
+                    ErrCode = 1008,
+                    Message = ex.Message
+                };
+
+                return BadRequest(customErrorResponse);
+            }
+            catch (PropertyPostingLimitExceededException ex)
+            {
+                var customErrorResponse = new ErrorApiResponse
+                {
+                    ErrCode = 1007,
+                    Message = ex.Message
+                };
+
+                return BadRequest(customErrorResponse);
+            }
+            catch (CustomModelFieldError ex)
+            {
+                var customErrorResponse = new ErrorApiResponse
+                {
+                    ErrCode = 1001,
+                    Message = ex.Message
+                };
+
+                return BadRequest(customErrorResponse);
+
+            }
+            catch (Exception ex)
+            {
+                await Console.Out.WriteLineAsync(ex.Message);
+                                var errorObject = new ErrorApiResponse
+                {
+                    ErrCode = 500,
+                    Message = "Internal Server Error"
+                };
+
+                return StatusCode(StatusCodes.Status500InternalServerError, errorObject);
+            }
+        }
+
+        [HttpPost]
+        [Route("commercial")]
+        public async Task<IActionResult> CreateCommercialProperty(
+            [FromForm] List<IFormFile> files,
+            [FromForm] CommercialDetailsDTO basePropertyDTO
+            )
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+                    var customErrorResponse = new ErrorApiResponse
+                    {
+                        ErrCode = 1001,
+                        Message = "One or more validation errors occurred.",
+                        Error = errors
+                    };
+
+                    return BadRequest(customErrorResponse);
+                }
+
+                int UserId = int.Parse(User.FindFirst("userId").Value.ToString());
+
+                await _propertyService.CreateProperty(UserId, basePropertyDTO, files);
+
+                return Ok();
+            }
+            catch (MobileNotVerifiedException ex)
+            {
+                var customErrorResponse = new ErrorApiResponse
+                {
+                    ErrCode = 1008,
+                    Message = ex.Message
+                };
+
+                return BadRequest(customErrorResponse);
+            }
+            catch (PropertyPostingLimitExceededException ex)
+            {
+                var customErrorResponse = new ErrorApiResponse
+                {
+                    ErrCode = 1007,
+                    Message = ex.Message
+                };
+
+                return BadRequest(customErrorResponse);
+            }
+            catch (CustomModelFieldError ex)
+            {
+                var customErrorResponse = new ErrorApiResponse
+                {
+                    ErrCode = 1001,
+                    Message = ex.Message
+                };
+
+                return BadRequest(customErrorResponse);
+
+            }
+            catch (Exception ex)
+            {
+                await Console.Out.WriteLineAsync(ex.Message);
+                                var errorObject = new ErrorApiResponse
+                {
+                    ErrCode = 500,
+                    Message = "Internal Server Error"
+                };
+
+                return StatusCode(StatusCodes.Status500InternalServerError, errorObject);
+            }
+        }
+
+        [HttpPost]
+        [Route("product")]
+        public async Task<IActionResult> CreateProductProperty(
+            [FromForm] List<IFormFile> files,
+            [FromForm] ProductDetailsDTO basePropertyDTO
+            )
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+                    var customErrorResponse = new ErrorApiResponse
+                    {
+                        ErrCode = 1001,
+                        Message = "One or more validation errors occurred.",
+                        Error = errors
+                    };
+
+                    return BadRequest(customErrorResponse);
+                }
+
+                int UserId = int.Parse(User.FindFirst("userId").Value.ToString());
+
+                await _propertyService.CreateProperty(UserId, basePropertyDTO, files);
+
+                return Ok();
+            }
+            catch (MobileNotVerifiedException ex)
+            {
+                var customErrorResponse = new ErrorApiResponse
+                {
+                    ErrCode = 1008,
+                    Message = ex.Message
+                };
+
+                return BadRequest(customErrorResponse);
+            }
+            catch (PropertyPostingLimitExceededException ex)
+            {
+                var customErrorResponse = new ErrorApiResponse
+                {
+                    ErrCode = 1007,
+                    Message = ex.Message
+                };
+
+                return BadRequest(customErrorResponse);
+            }
+            catch (CustomModelFieldError ex)
+            {
+                var customErrorResponse = new ErrorApiResponse
+                {
+                    ErrCode = 1001,
+                    Message = ex.Message
+                };
+
+                return BadRequest(customErrorResponse);
+
+            }
+            catch (Exception ex)
+            {
+                await Console.Out.WriteLineAsync(ex.Message);
+                                var errorObject = new ErrorApiResponse
+                {
+                    ErrCode = 500,
+                    Message = "Internal Server Error"
+                };
+
+                return StatusCode(StatusCodes.Status500InternalServerError, errorObject);
+            }
+        }
+
+        [HttpPost]
+        [Route("land")]
+        public async Task<IActionResult> CreateLandProperty(
+            [FromForm] List<IFormFile> files,
+            [FromForm] LandDetailsDTO basePropertyDTO
+            )
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+                    var customErrorResponse = new ErrorApiResponse
+                    {
+                        ErrCode = 1001,
+                        Message = "One or more validation errors occurred.",
+                        Error = errors
+                    };
+
+                    return BadRequest(customErrorResponse);
+                }
+
+                int UserId = int.Parse(User.FindFirst("userId").Value.ToString());
+
+                await _propertyService.CreateProperty(UserId, basePropertyDTO, files);
+
+                return Ok();
+            }
+            catch (MobileNotVerifiedException ex)
+            {
+                var customErrorResponse = new ErrorApiResponse
+                {
+                    ErrCode = 1008,
+                    Message = ex.Message
+                };
+
+                return BadRequest(customErrorResponse);
+            }
+            catch (PropertyPostingLimitExceededException ex)
+            {
+                var customErrorResponse = new ErrorApiResponse
+                {
+                    ErrCode = 1007,
+                    Message = ex.Message
+                };
+
+                return BadRequest(customErrorResponse);
+            }
+            catch (CustomModelFieldError ex)
+            {
+                var customErrorResponse = new ErrorApiResponse
+                {
+                    ErrCode = 1001,
+                    Message = ex.Message
+                };
+
+                return BadRequest(customErrorResponse);
+
+            }
+            catch (Exception ex)
+            {
+                await Console.Out.WriteLineAsync(ex.Message);
+                                var errorObject = new ErrorApiResponse
+                {
+                    ErrCode = 500,
+                    Message = "Internal Server Error"
+                };
+
+                return StatusCode(StatusCodes.Status500InternalServerError, errorObject);
             }
         }
 

@@ -5,7 +5,6 @@ using Brokerless.Interfaces.Repositories;
 using Brokerless.Interfaces.Services;
 using Brokerless.Repositories;
 using Brokerless.Services;
-using Brokerless.Utilities;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
@@ -23,7 +22,6 @@ namespace Brokerless
                 .Services.AddControllers(options =>
                 {
                     options.Filters.Add(new AuthorizeFilter());
-                    options.ModelBinderProviders.Insert(0, new CustomModelBinderProvider());
                 })
                 .ConfigureApiBehaviorOptions(options =>
                     options.SuppressModelStateInvalidFilter = true
@@ -67,6 +65,7 @@ namespace Brokerless
             builder.Services.AddScoped(typeof(ISubscriptionTemplateRepository), typeof(SubscriptionTemplateRepository));
             builder.Services.AddScoped(typeof(ITransactionRepository), typeof(TransactionRepository));
             builder.Services.AddScoped(typeof(ITagRepository), typeof(TagRepository));
+            builder.Services.AddScoped(typeof(IPropertyRepository), typeof(PropertyRepository));
             #endregion
 
             builder.Services.AddCors(options =>

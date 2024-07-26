@@ -15,7 +15,6 @@ namespace Brokerless.Models
         public int PropertyId { get; set; } // Foreign Key
         public Property Property { get; set; }
 
-
     }
 
 }
