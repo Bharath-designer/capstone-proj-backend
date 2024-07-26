@@ -5,6 +5,7 @@ using Brokerless.Interfaces.Repositories;
 using Brokerless.Interfaces.Services;
 using Brokerless.Repositories;
 using Brokerless.Services;
+using Brokerless.Utilities;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
@@ -22,6 +23,7 @@ namespace Brokerless
                 .Services.AddControllers(options =>
                 {
                     options.Filters.Add(new AuthorizeFilter());
+                    options.ModelBinderProviders.Insert(0, new CustomModelBinderProvider());
                 })
                 .ConfigureApiBehaviorOptions(options =>
                     options.SuppressModelStateInvalidFilter = true
@@ -54,15 +56,33 @@ namespace Brokerless
             builder.Services.AddScoped(typeof(IAuthService), typeof(AuthService));
             builder.Services.AddScoped(typeof(IUserService), typeof(UserService));
             builder.Services.AddScoped(typeof(ITokenService), typeof(TokenService));
+            builder.Services.AddScoped(typeof(ISubscriptionService), typeof(SubscriptionService));
+            builder.Services.AddScoped(typeof(IPaymentService), typeof(PaymentService));
+            builder.Services.AddScoped(typeof(IPropertyService), typeof(PropertyService));
             #endregion
 
 
             #region Repositories
             builder.Services.AddScoped(typeof(IUserRepository), typeof(UserRepository));
+            builder.Services.AddScoped(typeof(ISubscriptionTemplateRepository), typeof(SubscriptionTemplateRepository));
+            builder.Services.AddScoped(typeof(ITransactionRepository), typeof(TransactionRepository));
+            builder.Services.AddScoped(typeof(ITagRepository), typeof(TagRepository));
             #endregion
+
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowSpecificOrigin", builder =>
+                {
+                    builder.AllowAnyOrigin()
+                           .AllowAnyMethod()
+                           .AllowAnyHeader();
+                });
+            });
 
 
             var app = builder.Build();
+
+            app.UseCors("AllowSpecificOrigin");
 
             if (app.Environment.IsDevelopment())
             {

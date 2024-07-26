@@ -1,4 +1,5 @@
-﻿using Brokerless.Models;
+﻿using Brokerless.Enums;
+using Brokerless.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace Brokerless.Context
@@ -26,6 +27,7 @@ namespace Brokerless.Context
         public DbSet<Transaction> Transactions { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<UserSubscription> UserSubscriptions { get; set; }
+        public DbSet<PropertyUserViewed> PropertyUserViewed { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -39,13 +41,13 @@ namespace Brokerless.Context
             modelBuilder.Entity<UserSubscription>()
                 .HasOne(u => u.SubscriptionTemplate)
                 .WithMany()
-                .HasForeignKey(u=>u.SubscriptionTemplateId)
+                .HasForeignKey(u=>u.SubscriptionTemplateName)
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Transaction>()
                 .HasOne(t => t.SubscriptionTemplate)
                 .WithMany()
-                .HasForeignKey(t => t.SubscriptionTemplateId)
+                .HasForeignKey(t => t.SubscriptionTemplateName)
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Transaction>()
@@ -91,16 +93,57 @@ namespace Brokerless.Context
                 .OnDelete(DeleteBehavior.Restrict);
 
 
+            modelBuilder.Entity<PropertyUserViewed>()
+            .HasKey(pt => new { pt.UserId, pt.PropertyId});
+
+
+
+            modelBuilder.Entity<PropertyUserViewed>()
+                .HasOne(p => p.Property)
+                .WithMany(pr => pr.UsersViewed)
+                .HasForeignKey(p => p.PropertyId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<PropertyUserViewed>()
+               .HasOne(p => p.User)
+               .WithMany(pr => pr.PropertiesViewed)
+               .HasForeignKey(p => p.UserId)
+               .OnDelete(DeleteBehavior.Restrict);
+
+
             modelBuilder.Entity<SubscriptionTemplate>()
                 .HasData(
                 new SubscriptionTemplate
                 {
                     SubsriptionName = "Free",
-                    Description = "This subsctiption is defaultf for user.",
+                    Description = "This subsctiption is default for user.",
                     Validity = null,
                     MaxListingCount = 1,
-                    MaxSellerViewCount = 1
-                });
+                    MaxSellerViewCount = 1,
+                    Currency = null,
+                    Price = null
+                },
+                new SubscriptionTemplate
+                {
+                    SubsriptionName = "Silver",
+                    Description = "This subsription is suitable for user who wants a basic limits",
+                    Validity = 28,
+                    MaxListingCount = 10,
+                    MaxSellerViewCount = 10,
+                    Currency = Currency.INR,
+                    Price = 499
+                },
+                new SubscriptionTemplate
+                {
+                    SubsriptionName = "Gold",
+                    Description = "This subsription is suitable for user who wants to post, view frequently",
+                    Validity = 28,
+                    MaxListingCount = 50,
+                    MaxSellerViewCount = 50,
+                    Currency = Currency.INR,
+                    Price = 999
+                }
+                );
             
 
             // For converting enum to string (int by default)

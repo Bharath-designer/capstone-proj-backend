@@ -18,7 +18,7 @@ namespace Brokerless.Models
         public WaterSupply WaterSupply { get; set; }
         public Electricity Electricity { get; set; }
         public bool GatedSecurity { get; set; }
-        public int CarParking { get; set; }
+        public bool CarParking { get; set; }
         public FurnishingDetails FurnishingDetails { get; set; }
         public int PropertyId { get; set; } // Foreign Key
         public Property Property { get; set; }

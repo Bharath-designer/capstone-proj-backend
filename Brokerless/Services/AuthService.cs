@@ -28,29 +28,24 @@ namespace Brokerless.Services
             if (emailVerified)
             {
 
-                User existingUser = await _userRepository.GetUserByEmail(payload.Email);
-                User userToCreateToken = null;
+                User user = await _userRepository.GetUserByEmail(payload.Email);
 
-                if (existingUser == null)
+                if (user == null)
                 {
                     string email = payload.Email;
                     string userName = payload.Name;
                     string profilePic = payload.Picture;
-                    userToCreateToken = await _userService.CreateUser(email, userName, profilePic);
-                    await Console.Out.WriteLineAsync("New user created");
-                } else
-                {
-                    await Console.Out.WriteLineAsync("got existing user");
-                    userToCreateToken = existingUser;
-                }
+                    user = await _userService.CreateUser(email, userName, profilePic);
+                } 
 
-                string Token = _tokenService.GenerateToken(userToCreateToken);
-                await Console.Out.WriteLineAsync(Token);
-                await Console.Out.WriteLineAsync("above token");
-                return new AuthReturnDTO
+                string Token = _tokenService.GenerateToken(user);
+
+                var authReturnDTO = new AuthReturnDTO
                 {
                     Token = Token
                 };
+
+                return authReturnDTO;
             }
 
             throw new GmailNotVerifiedException();

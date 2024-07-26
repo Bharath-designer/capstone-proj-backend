@@ -17,5 +17,10 @@ namespace Brokerless.Repositories
             return user;
         }
 
+        public async Task<User> GetUserWithSubscription(int userId)
+        {
+            var user = await _context.Users.Include(u=>u.UserSubscription).FirstOrDefaultAsync(u=>u.UserId == userId);
+            return user;
+        }
     }
 }

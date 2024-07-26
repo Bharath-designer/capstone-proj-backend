@@ -22,8 +22,9 @@ namespace Brokerless.Models
         public double? Rent { get; set; }
         public DurationType? RentDuration { get; set; }
         public double? Deposit { get; set; }
-        public DateTime PostedOn { get; set; }
-        public PropertyStatus PropertyStatus { get; set; }
+        public DateTime PostedOn { get; set; } = DateTime.Now;
+        public PropertyStatus PropertyStatus { get; set; } = PropertyStatus.Active;
+        public bool isApproved { get; set; } = false;
         public int SellerId { get; set; } // ForeignKey
         public List<Tag> Tags { get; set; }
         public List<PropertyFile> Files { get; set; }
@@ -33,6 +34,6 @@ namespace Brokerless.Models
         public HouseDetails HouseDetails { get; set; }  
         public LandDetails  LandDetails { get; set; }
         public ProductDetails ProductDetails { get; set; }
-
+        public List<PropertyUserViewed> UsersViewed { get; set; }
     }
 }

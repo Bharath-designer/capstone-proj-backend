@@ -19,6 +19,7 @@ namespace Brokerless.Models
         public List<Transaction> Transactions { get; set; }
         public List<Property> Listings { get; set; }
         public List<Conversation> Conversations { get; set; }
+        public List<PropertyUserViewed> PropertiesViewed { get; set; }
 
     }
 }

@@ -4,6 +4,7 @@ using Brokerless.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Brokerless.Migrations
 {
     [DbContext(typeof(BrokerlessDBContext))]
-    partial class BrokerlessDBContextModelSnapshot : ModelSnapshot
+    [Migration("20240725041139_updated-seeding-data")]
+    partial class updatedseedingdata
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -165,8 +168,8 @@ namespace Brokerless.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("HouseDetailsId"));
 
-                    b.Property<bool>("CarParking")
-                        .HasColumnType("bit");
+                    b.Property<int>("CarParking")
+                        .HasColumnType("int");
 
                     b.Property<string>("Electricity")
                         .IsRequired()
@@ -354,9 +357,6 @@ namespace Brokerless.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("isApproved")
-                        .HasColumnType("bit");
-
                     b.HasKey("PropertyId");
 
                     b.HasIndex("SellerId");
@@ -391,24 +391,6 @@ namespace Brokerless.Migrations
                     b.HasIndex("PropertyId");
 
                     b.ToTable("PropertyFiles");
-                });
-
-            modelBuilder.Entity("Brokerless.Models.PropertyUserViewed", b =>
-                {
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("PropertyId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedOn")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("UserId", "PropertyId");
-
-                    b.HasIndex("PropertyId");
-
-                    b.ToTable("PropertyUserViewed");
                 });
 
             modelBuilder.Entity("Brokerless.Models.SubscriptionTemplate", b =>
@@ -569,7 +551,7 @@ namespace Brokerless.Migrations
                     b.Property<int>("AvailableSellerViewCount")
                         .HasColumnType("int");
 
-                    b.Property<DateTime?>("ExpiresOn")
+                    b.Property<DateTime>("ExpiresOn")
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime>("SubscribedOn")
@@ -580,6 +562,9 @@ namespace Brokerless.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Validity")
                         .HasColumnType("int");
 
                     b.HasKey("UserSubscriptionId");
@@ -710,25 +695,6 @@ namespace Brokerless.Migrations
                     b.Navigation("Property");
                 });
 
-            modelBuilder.Entity("Brokerless.Models.PropertyUserViewed", b =>
-                {
-                    b.HasOne("Brokerless.Models.Property", "Property")
-                        .WithMany("UsersViewed")
-                        .HasForeignKey("PropertyId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Brokerless.Models.User", "User")
-                        .WithMany("PropertiesViewed")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Property");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("Brokerless.Models.Transaction", b =>
                 {
                     b.HasOne("Brokerless.Models.SubscriptionTemplate", "SubscriptionTemplate")
@@ -815,8 +781,6 @@ namespace Brokerless.Migrations
 
                     b.Navigation("ProductDetails")
                         .IsRequired();
-
-                    b.Navigation("UsersViewed");
                 });
 
             modelBuilder.Entity("Brokerless.Models.User", b =>
@@ -824,8 +788,6 @@ namespace Brokerless.Migrations
                     b.Navigation("Conversations");
 
                     b.Navigation("Listings");
-
-                    b.Navigation("PropertiesViewed");
 
                     b.Navigation("Transactions");
 

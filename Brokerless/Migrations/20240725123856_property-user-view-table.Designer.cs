@@ -4,6 +4,7 @@ using Brokerless.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Brokerless.Migrations
 {
     [DbContext(typeof(BrokerlessDBContext))]
-    partial class BrokerlessDBContextModelSnapshot : ModelSnapshot
+    [Migration("20240725123856_property-user-view-table")]
+    partial class propertyuserviewtable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -165,8 +168,8 @@ namespace Brokerless.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("HouseDetailsId"));
 
-                    b.Property<bool>("CarParking")
-                        .HasColumnType("bit");
+                    b.Property<int>("CarParking")
+                        .HasColumnType("int");
 
                     b.Property<string>("Electricity")
                         .IsRequired()
@@ -353,9 +356,6 @@ namespace Brokerless.Migrations
                     b.Property<string>("State")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("isApproved")
-                        .HasColumnType("bit");
 
                     b.HasKey("PropertyId");
 
