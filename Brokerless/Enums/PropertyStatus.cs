@@ -3,7 +3,6 @@
     public enum PropertyStatus
     {
         Active,
-        Inactive,
-        Closed
+        Inactive
     }
 }

@@ -10,9 +10,9 @@ namespace Brokerless.DTOs.Property
         public string? City { get; set; }
         public string? State { get; set; }
         public List<string>? Tags { get; set; }
-        public OrderByType? OrderBy { get; set; }
+        public OrderByType OrderBy { get; set; } = OrderByType.DateDesc;
         public PropertyType? PropertyType { get; set; }
         public PropertyCategory? PropertyCategory { get; set; }
-
+        
     }
 }

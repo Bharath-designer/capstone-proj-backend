@@ -3,12 +3,14 @@ using Brokerless.DTOs.Property;
 using Microsoft.AspNetCore.Mvc;
 using Brokerless.Exceptions;
 using Brokerless.Interfaces.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Brokerless.Controllers
 {
 
     [ApiController]
     [Route("/api/v1/property")]
+    [Authorize(Roles = "User")]
     public class PropertyController: ControllerBase
     {
         private readonly IPropertyService _propertyService;
@@ -19,6 +21,7 @@ namespace Brokerless.Controllers
 
 
         [HttpGet]
+        [AllowAnonymous]
         public async Task<IActionResult> GetAllProperties([FromQuery] PropertySearchFilterDTO propertySearchFilterDTO)
         {
             try
@@ -36,7 +39,8 @@ namespace Brokerless.Controllers
                     return BadRequest(customErrorResponse);
                 }
 
-                List<PropertyReturnDTO> data = await _propertyService.GetPropertiesWithFilters(propertySearchFilterDTO);
+                int? userId = User.FindFirst("userId") != null ? int.Parse(User.FindFirst("userId").Value.ToString()) : null;
+                List<PropertyReturnDTO> data = await _propertyService.GetPropertiesWithFilters(userId, propertySearchFilterDTO);
                 return Ok(data);
             }
             catch (Exception ex)
@@ -55,6 +59,7 @@ namespace Brokerless.Controllers
 
         [HttpGet]
         [Route("{propertyId}")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetPropertyDetails([FromRoute] int propertyId)
         {
             try
@@ -72,7 +77,7 @@ namespace Brokerless.Controllers
                     return BadRequest(customErrorResponse);
                 }
 
-                int userId = int.Parse(User.FindFirst("userId").Value.ToString());
+                int? userId = User.FindFirst("userId") != null ? int.Parse(User.FindFirst("userId").Value.ToString()) : null;
 
                 PropertyReturnDTO data = await _propertyService.GetPropertyByIdForUser(userId, propertyId);
                 return Ok(data);
@@ -98,6 +103,95 @@ namespace Brokerless.Controllers
                 };
 
                 return StatusCode(StatusCodes.Status500InternalServerError, errorObject);
+            }
+        }
+
+        [HttpPost]
+        [Route("request")]
+        public async Task<IActionResult> GetRequestForAProperty(RequestPropertyDTO requestPropertyDTO)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+                    var customErrorResponse = new ErrorApiResponse
+                    {
+                        ErrCode = 1001,
+                        Message = "One or more validation errors occurred.",
+                        Error = errors
+                    };
+                    return BadRequest(customErrorResponse);
+                }
+
+                int userId = int.Parse(User.FindFirst("userId").Value.ToString());
+
+                await _propertyService.RequestForProperty(userId, requestPropertyDTO);
+
+                return Ok();
+            }
+            catch (PropertyViewingLimitExceededException ex)
+            {
+                var customErrorResponse = new ErrorApiResponse
+                {
+                    ErrCode = 1013,
+                    Message = ex.Message
+                };
+
+                return BadRequest(customErrorResponse);
+
+            }
+            catch (PropertyDetailsRequestAlreadySatisfied ex)
+            {
+                var customErrorResponse = new ErrorApiResponse
+                {
+                    ErrCode = 1014,
+                    Message = ex.Message
+                };
+
+                return BadRequest(customErrorResponse);
+            }
+            catch (UserNotFoundException ex)
+            {
+                var customErrorResponse = new ErrorApiResponse
+                {
+                    ErrCode = 1009,
+                    Message = ex.Message
+                };
+
+                return BadRequest(customErrorResponse);
+            }
+            catch (OwnPropertyRequestedException ex)
+            {
+                var customErrorResponse = new ErrorApiResponse
+                {
+                    ErrCode = 1015,
+                    Message = ex.Message
+                };
+
+                return BadRequest(customErrorResponse);
+            }
+            catch (PropertyNotFound ex)
+            {
+                var customErrorResponse = new ErrorApiResponse
+                {
+                    ErrCode = 1011,
+                    Message = ex.Message
+                };
+
+                return BadRequest(customErrorResponse);
+            }
+            catch (Exception ex)
+            {
+                await Console.Out.WriteLineAsync(ex.Message);
+                var errorObject = new ErrorApiResponse
+                {
+                    ErrCode = 500,
+                    Message = "Internal Server Error"
+                };
+
+                return StatusCode(StatusCodes.Status500InternalServerError, errorObject);
+
             }
         }
 
@@ -453,6 +547,71 @@ namespace Brokerless.Controllers
             {
                 await Console.Out.WriteLineAsync(ex.Message);
                                 var errorObject = new ErrorApiResponse
+                {
+                    ErrCode = 500,
+                    Message = "Internal Server Error"
+                };
+
+                return StatusCode(StatusCodes.Status500InternalServerError, errorObject);
+            }
+        }
+
+
+        [HttpPut]
+        [Route("house")]
+        public async Task<IActionResult> UpdateHouseProperty(
+            [FromForm] List<IFormFile> files,
+            [FromForm] UpdateHouseDetailsDTO updateHouseDetailsDTO
+            )
+        {
+            try
+            {
+
+                if (!ModelState.IsValid)
+                {
+                    var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+                    var customErrorResponse = new ErrorApiResponse
+                    {
+                        ErrCode = 1001,
+                        Message = "One or more validation errors occurred.",
+                        Error = errors
+                    };
+
+                    return BadRequest(customErrorResponse);
+                }
+
+                int UserId = int.Parse(User.FindFirst("userId").Value.ToString());
+
+                await _propertyService.UpdateProperty(UserId, updateHouseDetailsDTO, files);
+
+                return Ok();
+            }
+            catch (PropertyNotFound ex)
+            {
+                await Console.Out.WriteLineAsync(ex.Message);
+                var errorObject = new ErrorApiResponse
+                {
+                    ErrCode = 1011,
+                    Message = ex.Message
+                };
+
+                return BadRequest(errorObject);
+            }
+            catch (CustomModelFieldError ex)
+            {
+                var customErrorResponse = new ErrorApiResponse
+                {
+                    ErrCode = 1001,
+                    Message = ex.Message
+                };
+
+                return BadRequest(customErrorResponse);
+
+            }
+            catch (Exception ex)
+            {
+                await Console.Out.WriteLineAsync(ex.Message);
+                var errorObject = new ErrorApiResponse
                 {
                     ErrCode = 500,
                     Message = "Internal Server Error"

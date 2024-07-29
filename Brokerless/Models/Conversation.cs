@@ -6,12 +6,11 @@ namespace Brokerless.Models
     {
         [Key]
         public int ConversationId { get; set; }
-        public int UserId { get; set; }
-        public int ConversationWithUserId { get; set; } // Foreign Key
         public List<Chat> Chats { get; set; }
-        public User User { get; set; }
-        public User ConversationWithUser { get; set; }
+        public List<User> Users { get; set; }
+        public bool HasUnreadMessage { get; set; } = true;
         public DateTime LastUpdatedOn { get; set; }
+        public int LastConversationBy { get; set; }
 
     }
 }

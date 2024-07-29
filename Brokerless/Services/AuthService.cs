@@ -28,6 +28,12 @@ namespace Brokerless.Services
             if (emailVerified)
             {
 
+                // Creating dummy users
+                //payload.Email = "user2@gmail.com";
+                //payload.Name = "User 2";
+                //payload.Picture = "https://image.lexica.art/full_jpg/7515495b-982d-44d2-9931-5a8bbbf27532";
+
+
                 User user = await _userRepository.GetUserByEmail(payload.Email);
 
                 if (user == null)

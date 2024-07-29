@@ -81,22 +81,16 @@ namespace Brokerless.Context
                 .HasForeignKey<CommercialDetails>(c => c.PropertyId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<Conversation>()
-                .HasMany(c => c.Chats)
-                .WithMany()
-                .UsingEntity(j => j.ToTable("ConversationChat"));
+            modelBuilder.Entity<Chat>()
+                .HasOne(c => c.Conversation)
+                .WithMany(co => co.Chats)
+                .HasForeignKey(c => c.ConversationId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Conversation>()
-                .HasOne(c => c.User)
+                .HasMany(c => c.Users)
                 .WithMany(u => u.Conversations)
-                .HasForeignKey(c => c.UserId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<Conversation>()
-                .HasOne(c => c.ConversationWithUser)
-                .WithMany()
-                .HasForeignKey(c => c.ConversationWithUserId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .UsingEntity(j => j.ToTable("UserConversation"));
 
             modelBuilder.Entity<PropertyUserViewed>()
             .HasKey(pt => new { pt.UserId, pt.PropertyId});
@@ -148,6 +142,21 @@ namespace Brokerless.Context
                     Currency = Currency.INR,
                     Price = 999
                 }
+                );
+
+
+            // Seeding Admin user data
+
+            modelBuilder.Entity<User>()
+                .HasData(
+                    new User
+                    {
+                        UserId = 1,
+                        Email = "bharath060723@gmail.com",
+                        FullName = "Brokerless Admin",
+                        UserRole = UserRole.Admin,
+                        ProfileUrl = "https://lh3.googleusercontent.com/-c7zfo6Em20Y/AAAAAAAAAAI/AAAAAAAAAAA/ALKGfkniiqltD54bxzEjiVBwMM19Xk9Ikw/photo.jpg"
+                    }
                 );
             
 

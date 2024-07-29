@@ -10,6 +10,6 @@ namespace Brokerless.Models
         public int UserId { get; set; }
         public User User { get; set; }
 
-        public DateTime CreatedOn { get; set; }
+        public DateTime CreatedOn { get; set; } = DateTime.Now;
     }
 }

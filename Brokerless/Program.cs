@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 
 namespace Brokerless
 {
@@ -45,6 +46,34 @@ namespace Brokerless
                     };
                 });
 
+            builder.Services.AddSwaggerGen(option =>
+            {
+                option.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
+                {
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.ApiKey,
+                    Scheme = "Bearer",
+                    BearerFormat = "JWT",
+                    In = ParameterLocation.Header,
+                    Description = "JWT Authorization header using the Bearer scheme. \r\n\r\n Enter 'Bearer' [space] and then your token in the text input below.\r\n\r\nExample: \"Bearer eyJhbGckjsdcsdcsdcsd.cdsfasdncjksdnacsd.csdc\"",
+                });
+                option.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            }
+                        },
+                        new string[] { }
+                    }
+                });
+            });
+
+
             builder.Services.AddDbContext<BrokerlessDBContext>(options =>
             {
                 options.UseSqlServer(builder.Configuration.GetConnectionString("default"));
@@ -57,6 +86,8 @@ namespace Brokerless
             builder.Services.AddScoped(typeof(ISubscriptionService), typeof(SubscriptionService));
             builder.Services.AddScoped(typeof(IPaymentService), typeof(PaymentService));
             builder.Services.AddScoped(typeof(IPropertyService), typeof(PropertyService));
+            builder.Services.AddScoped(typeof(IFileUploadService), typeof(FileUploadService));
+            builder.Services.AddScoped(typeof(IAdminService), typeof(AdminService));
             #endregion
 
 
@@ -66,6 +97,7 @@ namespace Brokerless
             builder.Services.AddScoped(typeof(ITransactionRepository), typeof(TransactionRepository));
             builder.Services.AddScoped(typeof(ITagRepository), typeof(TagRepository));
             builder.Services.AddScoped(typeof(IPropertyRepository), typeof(PropertyRepository));
+            builder.Services.AddScoped(typeof(IConversationRepository), typeof(ConversationRepository));
             #endregion
 
             builder.Services.AddCors(options =>

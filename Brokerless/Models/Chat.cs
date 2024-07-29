@@ -8,8 +8,10 @@ namespace Brokerless.Models
         [Key]
         public int ChatId { get; set; }
         public string Message { get; set; }
-        public DateTime CreatedOn { get; set; }
-        public MessageType Type { get; set; }
+        public int UserId { get; set; }
+        public DateTime CreatedOn { get; set; } = DateTime.Now;
+        public int ConversationId { get; set; } // Foreign Key
+        public Conversation Conversation { get; set; }
 
     }
 }

@@ -25,7 +25,7 @@ namespace Brokerless.Services
                 new Claim(ClaimTypes.Role, user.UserRole.ToString())
             };
             var credentials = new SigningCredentials(_key, SecurityAlgorithms.HmacSha256);
-            var myToken = new JwtSecurityToken(null, null, claims, expires: DateTime.Now.AddDays(2), signingCredentials: credentials);
+            var myToken = new JwtSecurityToken(null, null, claims, expires: DateTime.Now.AddDays(20), signingCredentials: credentials);
             string token = new JwtSecurityTokenHandler().WriteToken(myToken);
             return token;
         }

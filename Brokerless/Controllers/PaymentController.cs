@@ -10,6 +10,7 @@ namespace Brokerless.Controllers
 {
     [Route("api/payment")]
     [ApiController]
+    [Authorize(Roles = "User")]
     public class PaymentController : ControllerBase
     {
         private readonly IPaymentService _paymentService;

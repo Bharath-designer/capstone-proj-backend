@@ -30,6 +30,9 @@ namespace Brokerless.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ChatId"));
 
+                    b.Property<int>("ConversationId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("CreatedOn")
                         .HasColumnType("datetime2");
 
@@ -37,11 +40,12 @@ namespace Brokerless.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
 
                     b.HasKey("ChatId");
+
+                    b.HasIndex("ConversationId");
 
                     b.ToTable("Chats");
                 });
@@ -110,20 +114,16 @@ namespace Brokerless.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ConversationId"));
 
-                    b.Property<int>("ConversationWithUserId")
+                    b.Property<bool>("HasUnreadMessage")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("LastConversationBy")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("LastUpdatedOn")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
                     b.HasKey("ConversationId");
-
-                    b.HasIndex("ConversationWithUserId");
-
-                    b.HasIndex("UserId");
 
                     b.ToTable("Conversations");
                 });
@@ -561,6 +561,18 @@ namespace Brokerless.Migrations
                     b.HasKey("UserId");
 
                     b.ToTable("Users");
+
+                    b.HasData(
+                        new
+                        {
+                            UserId = 1,
+                            CreatedOn = new DateTime(2024, 7, 29, 12, 17, 6, 839, DateTimeKind.Local).AddTicks(2049),
+                            Email = "bharath060723@gmail.com",
+                            FullName = "Brokerless Admin",
+                            PhoneNumberVerified = false,
+                            ProfileUrl = "https://lh3.googleusercontent.com/-c7zfo6Em20Y/AAAAAAAAAAI/AAAAAAAAAAA/ALKGfkniiqltD54bxzEjiVBwMM19Xk9Ikw/photo.jpg",
+                            UserRole = "Admin"
+                        });
                 });
 
             modelBuilder.Entity("Brokerless.Models.UserSubscription", b =>
@@ -600,19 +612,19 @@ namespace Brokerless.Migrations
                     b.ToTable("UserSubscriptions");
                 });
 
-            modelBuilder.Entity("ChatConversation", b =>
+            modelBuilder.Entity("ConversationUser", b =>
                 {
-                    b.Property<int>("ChatsChatId")
+                    b.Property<int>("ConversationsConversationId")
                         .HasColumnType("int");
 
-                    b.Property<int>("ConversationId")
+                    b.Property<int>("UsersUserId")
                         .HasColumnType("int");
 
-                    b.HasKey("ChatsChatId", "ConversationId");
+                    b.HasKey("ConversationsConversationId", "UsersUserId");
 
-                    b.HasIndex("ConversationId");
+                    b.HasIndex("UsersUserId");
 
-                    b.ToTable("ConversationChat", (string)null);
+                    b.ToTable("UserConversation", (string)null);
                 });
 
             modelBuilder.Entity("PropertyTag", b =>
@@ -630,6 +642,17 @@ namespace Brokerless.Migrations
                     b.ToTable("PropertyTag", (string)null);
                 });
 
+            modelBuilder.Entity("Brokerless.Models.Chat", b =>
+                {
+                    b.HasOne("Brokerless.Models.Conversation", "Conversation")
+                        .WithMany("Chats")
+                        .HasForeignKey("ConversationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Conversation");
+                });
+
             modelBuilder.Entity("Brokerless.Models.CommercialDetails", b =>
                 {
                     b.HasOne("Brokerless.Models.Property", "Property")
@@ -639,25 +662,6 @@ namespace Brokerless.Migrations
                         .IsRequired();
 
                     b.Navigation("Property");
-                });
-
-            modelBuilder.Entity("Brokerless.Models.Conversation", b =>
-                {
-                    b.HasOne("Brokerless.Models.User", "ConversationWithUser")
-                        .WithMany()
-                        .HasForeignKey("ConversationWithUserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Brokerless.Models.User", "User")
-                        .WithMany("Conversations")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("ConversationWithUser");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Brokerless.Models.HostelDetails", b =>
@@ -783,17 +787,17 @@ namespace Brokerless.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("ChatConversation", b =>
+            modelBuilder.Entity("ConversationUser", b =>
                 {
-                    b.HasOne("Brokerless.Models.Chat", null)
+                    b.HasOne("Brokerless.Models.Conversation", null)
                         .WithMany()
-                        .HasForeignKey("ChatsChatId")
+                        .HasForeignKey("ConversationsConversationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Brokerless.Models.Conversation", null)
+                    b.HasOne("Brokerless.Models.User", null)
                         .WithMany()
-                        .HasForeignKey("ConversationId")
+                        .HasForeignKey("UsersUserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -811,6 +815,11 @@ namespace Brokerless.Migrations
                         .HasForeignKey("TagsTagValue")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Brokerless.Models.Conversation", b =>
+                {
+                    b.Navigation("Chats");
                 });
 
             modelBuilder.Entity("Brokerless.Models.Property", b =>
@@ -837,8 +846,6 @@ namespace Brokerless.Migrations
 
             modelBuilder.Entity("Brokerless.Models.User", b =>
                 {
-                    b.Navigation("Conversations");
-
                     b.Navigation("Listings");
 
                     b.Navigation("PropertiesViewed");

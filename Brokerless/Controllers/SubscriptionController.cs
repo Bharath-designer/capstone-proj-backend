@@ -3,6 +3,7 @@ using Brokerless.DTOs.Payment;
 using Brokerless.DTOs.Subscription;
 using Brokerless.Exceptions;
 using Brokerless.Interfaces.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
@@ -10,6 +11,7 @@ namespace Brokerless.Controllers
 {
     [ApiController]
     [Route("/api/v1/subscription")]
+    [Authorize(Roles = "User")]
     public class SubscriptionController: ControllerBase
     {
         private readonly ISubscriptionService _subscriptionService;
