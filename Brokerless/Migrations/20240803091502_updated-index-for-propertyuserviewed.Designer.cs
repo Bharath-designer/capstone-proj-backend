@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Brokerless.Migrations
 {
     [DbContext(typeof(BrokerlessDBContext))]
-    [Migration("20240726164913_conversationUpdated3")]
-    partial class conversationUpdated3
+    [Migration("20240803091502_updated-index-for-propertyuserviewed")]
+    partial class updatedindexforpropertyuserviewed
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -119,6 +119,9 @@ namespace Brokerless.Migrations
 
                     b.Property<bool>("HasUnreadMessage")
                         .HasColumnType("bit");
+
+                    b.Property<int>("LastConversationBy")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("LastUpdatedOn")
                         .HasColumnType("datetime2");
@@ -401,6 +404,21 @@ namespace Brokerless.Migrations
                     b.ToTable("PropertyFiles");
                 });
 
+            modelBuilder.Entity("Brokerless.Models.PropertyTag", b =>
+                {
+                    b.Property<int>("PropertyId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TagValue")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("PropertyId", "TagValue");
+
+                    b.HasIndex("TagValue");
+
+                    b.ToTable("PropertyTag");
+                });
+
             modelBuilder.Entity("Brokerless.Models.PropertyUserViewed", b =>
                 {
                     b.Property<int>("UserId")
@@ -414,7 +432,11 @@ namespace Brokerless.Migrations
 
                     b.HasKey("UserId", "PropertyId");
 
+                    b.HasIndex("CreatedOn");
+
                     b.HasIndex("PropertyId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("PropertyUserViewed");
                 });
@@ -561,6 +583,18 @@ namespace Brokerless.Migrations
                     b.HasKey("UserId");
 
                     b.ToTable("Users");
+
+                    b.HasData(
+                        new
+                        {
+                            UserId = 1,
+                            CreatedOn = new DateTime(2024, 8, 3, 14, 45, 1, 578, DateTimeKind.Local).AddTicks(3542),
+                            Email = "bharath060723@gmail.com",
+                            FullName = "Brokerless Admin",
+                            PhoneNumberVerified = false,
+                            ProfileUrl = "https://lh3.googleusercontent.com/-c7zfo6Em20Y/AAAAAAAAAAI/AAAAAAAAAAA/ALKGfkniiqltD54bxzEjiVBwMM19Xk9Ikw/photo.jpg",
+                            UserRole = "Admin"
+                        });
                 });
 
             modelBuilder.Entity("Brokerless.Models.UserSubscription", b =>
@@ -613,21 +647,6 @@ namespace Brokerless.Migrations
                     b.HasIndex("UsersUserId");
 
                     b.ToTable("UserConversation", (string)null);
-                });
-
-            modelBuilder.Entity("PropertyTag", b =>
-                {
-                    b.Property<int>("PropertiesPropertyId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("TagsTagValue")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("PropertiesPropertyId", "TagsTagValue");
-
-                    b.HasIndex("TagsTagValue");
-
-                    b.ToTable("PropertyTag", (string)null);
                 });
 
             modelBuilder.Entity("Brokerless.Models.Chat", b =>
@@ -718,6 +737,25 @@ namespace Brokerless.Migrations
                     b.Navigation("Property");
                 });
 
+            modelBuilder.Entity("Brokerless.Models.PropertyTag", b =>
+                {
+                    b.HasOne("Brokerless.Models.Property", "Property")
+                        .WithMany("Tags")
+                        .HasForeignKey("PropertyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Brokerless.Models.Tag", "Tag")
+                        .WithMany("Properties")
+                        .HasForeignKey("TagValue")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Property");
+
+                    b.Navigation("Tag");
+                });
+
             modelBuilder.Entity("Brokerless.Models.PropertyUserViewed", b =>
                 {
                     b.HasOne("Brokerless.Models.Property", "Property")
@@ -790,21 +828,6 @@ namespace Brokerless.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("PropertyTag", b =>
-                {
-                    b.HasOne("Brokerless.Models.Property", null)
-                        .WithMany()
-                        .HasForeignKey("PropertiesPropertyId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Brokerless.Models.Tag", null)
-                        .WithMany()
-                        .HasForeignKey("TagsTagValue")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("Brokerless.Models.Conversation", b =>
                 {
                     b.Navigation("Chats");
@@ -829,7 +852,14 @@ namespace Brokerless.Migrations
                     b.Navigation("ProductDetails")
                         .IsRequired();
 
+                    b.Navigation("Tags");
+
                     b.Navigation("UsersViewed");
+                });
+
+            modelBuilder.Entity("Brokerless.Models.Tag", b =>
+                {
+                    b.Navigation("Properties");
                 });
 
             modelBuilder.Entity("Brokerless.Models.User", b =>

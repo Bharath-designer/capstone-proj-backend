@@ -3,44 +3,46 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
+#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
+
 namespace Brokerless.Migrations
 {
     /// <inheritdoc />
-    public partial class initial : Migration
+    public partial class tagproperty : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Chats",
+                name: "Conversations",
                 columns: table => new
                 {
-                    ChatId = table.Column<int>(type: "int", nullable: false)
+                    ConversationId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Message = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CreatedOn = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Type = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    HasUnreadMessage = table.Column<bool>(type: "bit", nullable: false),
+                    LastUpdatedOn = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    LastConversationBy = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Chats", x => x.ChatId);
+                    table.PrimaryKey("PK_Conversations", x => x.ConversationId);
                 });
 
             migrationBuilder.CreateTable(
                 name: "SubscriptionTemplates",
                 columns: table => new
                 {
-                    SubscriptionTemplateId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    SubsriptionName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    SubsriptionName = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Currency = table.Column<int>(type: "int", nullable: true),
+                    Price = table.Column<double>(type: "float", nullable: true),
                     MaxListingCount = table.Column<int>(type: "int", nullable: false),
                     MaxSellerViewCount = table.Column<int>(type: "int", nullable: false),
-                    Validity = table.Column<int>(type: "int", nullable: false)
+                    Validity = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_SubscriptionTemplates", x => x.SubscriptionTemplateId);
+                    table.PrimaryKey("PK_SubscriptionTemplates", x => x.SubsriptionName);
                 });
 
             migrationBuilder.CreateTable(
@@ -75,21 +77,24 @@ namespace Brokerless.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Conversations",
+                name: "Chats",
                 columns: table => new
                 {
-                    ConversationId = table.Column<int>(type: "int", nullable: false)
+                    ChatId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<int>(type: "int", nullable: false)
+                    Message = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    UserId = table.Column<int>(type: "int", nullable: false),
+                    CreatedOn = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ConversationId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Conversations", x => x.ConversationId);
+                    table.PrimaryKey("PK_Chats", x => x.ChatId);
                     table.ForeignKey(
-                        name: "FK_Conversations_Users_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users",
-                        principalColumn: "UserId",
+                        name: "FK_Chats_Conversations_ConversationId",
+                        column: x => x.ConversationId,
+                        principalTable: "Conversations",
+                        principalColumn: "ConversationId",
                         onDelete: ReferentialAction.Restrict);
                 });
 
@@ -116,6 +121,7 @@ namespace Brokerless.Migrations
                     Deposit = table.Column<double>(type: "float", nullable: true),
                     PostedOn = table.Column<DateTime>(type: "datetime2", nullable: false),
                     PropertyStatus = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    isApproved = table.Column<bool>(type: "bit", nullable: false),
                     SellerId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -138,17 +144,17 @@ namespace Brokerless.Migrations
                     Amount = table.Column<double>(type: "float", nullable: false),
                     TransactionStatus = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ExpiresOn = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    SubscriptionTemplateId = table.Column<int>(type: "int", nullable: false),
+                    SubscriptionTemplateName = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     UserId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Transactions", x => x.TransactionId);
                     table.ForeignKey(
-                        name: "FK_Transactions_SubscriptionTemplates_SubscriptionTemplateId",
-                        column: x => x.SubscriptionTemplateId,
+                        name: "FK_Transactions_SubscriptionTemplates_SubscriptionTemplateName",
+                        column: x => x.SubscriptionTemplateName,
                         principalTable: "SubscriptionTemplates",
-                        principalColumn: "SubscriptionTemplateId",
+                        principalColumn: "SubsriptionName",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Transactions_Users_UserId",
@@ -159,27 +165,50 @@ namespace Brokerless.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "UserConversation",
+                columns: table => new
+                {
+                    ConversationsConversationId = table.Column<int>(type: "int", nullable: false),
+                    UsersUserId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserConversation", x => new { x.ConversationsConversationId, x.UsersUserId });
+                    table.ForeignKey(
+                        name: "FK_UserConversation_Conversations_ConversationsConversationId",
+                        column: x => x.ConversationsConversationId,
+                        principalTable: "Conversations",
+                        principalColumn: "ConversationId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_UserConversation_Users_UsersUserId",
+                        column: x => x.UsersUserId,
+                        principalTable: "Users",
+                        principalColumn: "UserId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "UserSubscriptions",
                 columns: table => new
                 {
                     UserSubscriptionId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     SubscribedOn = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ExpiresOn = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ExpiresOn = table.Column<DateTime>(type: "datetime2", nullable: true),
                     AvailableListingCount = table.Column<int>(type: "int", nullable: false),
                     AvailableSellerViewCount = table.Column<int>(type: "int", nullable: false),
-                    Validity = table.Column<int>(type: "int", nullable: false),
-                    SubscriptionTemplateId = table.Column<int>(type: "int", nullable: false),
+                    SubscriptionTemplateName = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     UserId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_UserSubscriptions", x => x.UserSubscriptionId);
                     table.ForeignKey(
-                        name: "FK_UserSubscriptions_SubscriptionTemplates_SubscriptionTemplateId",
-                        column: x => x.SubscriptionTemplateId,
+                        name: "FK_UserSubscriptions_SubscriptionTemplates_SubscriptionTemplateName",
+                        column: x => x.SubscriptionTemplateName,
                         principalTable: "SubscriptionTemplates",
-                        principalColumn: "SubscriptionTemplateId",
+                        principalColumn: "SubsriptionName",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_UserSubscriptions_Users_UserId",
@@ -187,30 +216,6 @@ namespace Brokerless.Migrations
                         principalTable: "Users",
                         principalColumn: "UserId",
                         onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "ConversationChat",
-                columns: table => new
-                {
-                    ChatsChatId = table.Column<int>(type: "int", nullable: false),
-                    ConversationId = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ConversationChat", x => new { x.ChatsChatId, x.ConversationId });
-                    table.ForeignKey(
-                        name: "FK_ConversationChat_Chats_ChatsChatId",
-                        column: x => x.ChatsChatId,
-                        principalTable: "Chats",
-                        principalColumn: "ChatId",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_ConversationChat_Conversations_ConversationId",
-                        column: x => x.ConversationId,
-                        principalTable: "Conversations",
-                        principalColumn: "ConversationId",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -284,7 +289,7 @@ namespace Brokerless.Migrations
                     WaterSupply = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Electricity = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     GatedSecurity = table.Column<bool>(type: "bit", nullable: false),
-                    CarParking = table.Column<int>(type: "int", nullable: false),
+                    CarParking = table.Column<bool>(type: "bit", nullable: false),
                     FurnishingDetails = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     PropertyId = table.Column<int>(type: "int", nullable: false)
                 },
@@ -371,41 +376,76 @@ namespace Brokerless.Migrations
                 name: "PropertyTag",
                 columns: table => new
                 {
-                    PropertiesPropertyId = table.Column<int>(type: "int", nullable: false),
-                    TagsTagValue = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    PropertyId = table.Column<int>(type: "int", nullable: false),
+                    TagValue = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_PropertyTag", x => new { x.PropertiesPropertyId, x.TagsTagValue });
+                    table.PrimaryKey("PK_PropertyTag", x => new { x.PropertyId, x.TagValue });
                     table.ForeignKey(
-                        name: "FK_PropertyTag_Properties_PropertiesPropertyId",
-                        column: x => x.PropertiesPropertyId,
+                        name: "FK_PropertyTag_Properties_PropertyId",
+                        column: x => x.PropertyId,
                         principalTable: "Properties",
                         principalColumn: "PropertyId",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_PropertyTag_Tags_TagsTagValue",
-                        column: x => x.TagsTagValue,
+                        name: "FK_PropertyTag_Tags_TagValue",
+                        column: x => x.TagValue,
                         principalTable: "Tags",
                         principalColumn: "TagValue",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
+
+            migrationBuilder.CreateTable(
+                name: "PropertyUserViewed",
+                columns: table => new
+                {
+                    PropertyId = table.Column<int>(type: "int", nullable: false),
+                    UserId = table.Column<int>(type: "int", nullable: false),
+                    CreatedOn = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PropertyUserViewed", x => new { x.UserId, x.PropertyId });
+                    table.ForeignKey(
+                        name: "FK_PropertyUserViewed_Properties_PropertyId",
+                        column: x => x.PropertyId,
+                        principalTable: "Properties",
+                        principalColumn: "PropertyId",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_PropertyUserViewed_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "UserId",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.InsertData(
+                table: "SubscriptionTemplates",
+                columns: new[] { "SubsriptionName", "Currency", "Description", "MaxListingCount", "MaxSellerViewCount", "Price", "Validity" },
+                values: new object[,]
+                {
+                    { "Free", null, "This subsctiption is default for user.", 1, 1, null, null },
+                    { "Gold", 0, "This subsription is suitable for user who wants to post, view frequently", 50, 50, 999.0, 28 },
+                    { "Silver", 0, "This subsription is suitable for user who wants a basic limits", 10, 10, 499.0, 28 }
+                });
+
+            migrationBuilder.InsertData(
+                table: "Users",
+                columns: new[] { "UserId", "CountryCode", "CreatedOn", "Email", "FullName", "PhoneNumber", "PhoneNumberVerified", "ProfileUrl", "UserRole" },
+                values: new object[] { 1, null, new DateTime(2024, 7, 29, 18, 55, 12, 850, DateTimeKind.Local).AddTicks(3013), "bharath060723@gmail.com", "Brokerless Admin", null, false, "https://lh3.googleusercontent.com/-c7zfo6Em20Y/AAAAAAAAAAI/AAAAAAAAAAA/ALKGfkniiqltD54bxzEjiVBwMM19Xk9Ikw/photo.jpg", "Admin" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Chats_ConversationId",
+                table: "Chats",
+                column: "ConversationId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_CommercialDetails_PropertyId",
                 table: "CommercialDetails",
                 column: "PropertyId",
                 unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ConversationChat_ConversationId",
-                table: "ConversationChat",
-                column: "ConversationId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Conversations_UserId",
-                table: "Conversations",
-                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_HostelDetails_PropertyId",
@@ -442,14 +482,19 @@ namespace Brokerless.Migrations
                 column: "PropertyId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_PropertyTag_TagsTagValue",
+                name: "IX_PropertyTag_TagValue",
                 table: "PropertyTag",
-                column: "TagsTagValue");
+                column: "TagValue");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Transactions_SubscriptionTemplateId",
+                name: "IX_PropertyUserViewed_PropertyId",
+                table: "PropertyUserViewed",
+                column: "PropertyId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Transactions_SubscriptionTemplateName",
                 table: "Transactions",
-                column: "SubscriptionTemplateId");
+                column: "SubscriptionTemplateName");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Transactions_UserId",
@@ -457,9 +502,14 @@ namespace Brokerless.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_UserSubscriptions_SubscriptionTemplateId",
+                name: "IX_UserConversation_UsersUserId",
+                table: "UserConversation",
+                column: "UsersUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserSubscriptions_SubscriptionTemplateName",
                 table: "UserSubscriptions",
-                column: "SubscriptionTemplateId");
+                column: "SubscriptionTemplateName");
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserSubscriptions_UserId",
@@ -472,10 +522,10 @@ namespace Brokerless.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "CommercialDetails");
+                name: "Chats");
 
             migrationBuilder.DropTable(
-                name: "ConversationChat");
+                name: "CommercialDetails");
 
             migrationBuilder.DropTable(
                 name: "HostelDetails");
@@ -496,22 +546,25 @@ namespace Brokerless.Migrations
                 name: "PropertyTag");
 
             migrationBuilder.DropTable(
+                name: "PropertyUserViewed");
+
+            migrationBuilder.DropTable(
                 name: "Transactions");
+
+            migrationBuilder.DropTable(
+                name: "UserConversation");
 
             migrationBuilder.DropTable(
                 name: "UserSubscriptions");
 
             migrationBuilder.DropTable(
-                name: "Chats");
-
-            migrationBuilder.DropTable(
-                name: "Conversations");
+                name: "Tags");
 
             migrationBuilder.DropTable(
                 name: "Properties");
 
             migrationBuilder.DropTable(
-                name: "Tags");
+                name: "Conversations");
 
             migrationBuilder.DropTable(
                 name: "SubscriptionTemplates");

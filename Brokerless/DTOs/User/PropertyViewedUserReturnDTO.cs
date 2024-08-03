@@ -8,5 +8,6 @@
         public string MobileNumber { get; set; }
         public string CountryCode { get; set; }
         public bool IsPhoneNumberVerified { get; set; }
+        public DateTime ViewedOn { get; set; }
     }
 }

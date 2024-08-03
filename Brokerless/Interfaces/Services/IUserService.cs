@@ -20,5 +20,6 @@ namespace Brokerless.Interfaces.Services
         public Task<List<PropertyViewedUserReturnDTO>> GetViewedUsersOfProperty(int userId, int propertyId);
         public Task<CreateConversationReturnDTO> CreateConversationWithPropertyRequestedUser(int userId, CreateConversationWithRequestedUserDTO createConversationDTO);
         public Task<List<PropertyReturnDTO>> GetUserRequestedPropertyDetails(int userId);
+        public Task<PropertyAnalyticsResultDTO> GetPropertyAnalytics(int userId, int propertyId);
     }
 }

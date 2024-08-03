@@ -71,7 +71,7 @@ namespace Brokerless.Services
                 else
                 {
                     int carryForwardDays = CalculateCarryForwardLimit(userSubscription.ExpiresOn, userSubscription.AvailableListingCount, exisitingSubscription.Validity);
-                    userSubscription.AvailableListingCount = userSubscription.AvailableListingCount + carryForwardDays;
+                    userSubscription.AvailableListingCount = subscriptionTemplate.MaxListingCount + carryForwardDays;
 
                 }
 
@@ -83,7 +83,7 @@ namespace Brokerless.Services
                 {
                     int carryForwardDays = CalculateCarryForwardLimit(userSubscription.ExpiresOn, userSubscription.AvailableSellerViewCount, exisitingSubscription.Validity);
 
-                    userSubscription.AvailableSellerViewCount = userSubscription.AvailableSellerViewCount + carryForwardDays;
+                    userSubscription.AvailableSellerViewCount = subscriptionTemplate.MaxSellerViewCount + carryForwardDays;
                 }
             }
             else
@@ -313,6 +313,12 @@ namespace Brokerless.Services
         {
             List<PropertyReturnDTO> userRequestedProperties = await _propertyRepository.GetUserRequestedProperties(userId);
             return userRequestedProperties;
+        }
+
+        public async Task<PropertyAnalyticsResultDTO> GetPropertyAnalytics(int userId, int propertyId)
+        {
+            PropertyAnalyticsResultDTO result = await _propertyRepository.GetPropertyAnalytics(userId, propertyId);
+            return result;
         }
     }
 }

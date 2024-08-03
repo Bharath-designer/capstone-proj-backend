@@ -33,7 +33,7 @@ namespace Brokerless.Repositories
                     PropertyType = p.PropertyType,
                     Rent = p.Rent,
                     RentDuration = p.RentDuration,
-                    Tags = p.Tags.Select(t => t.TagValue).ToList(),
+                    Tags = p.Tags.Select(t => t.Tag.TagValue).ToList(),
                     CommercialDetails = p.CommercialDetails,
                     HostelDetails = p.HostelDetails,
                     HouseDetails = p.HouseDetails,
@@ -43,9 +43,17 @@ namespace Brokerless.Repositories
                     IsApproved = p.isApproved,
                     LocationLat = p.LocationLat,
                     LocationLon = p.LocationLon,
-                    PropertyStatus = p.PropertyStatus
+                    PropertyStatus = p.PropertyStatus,
+                    Files = p.Files.Select(f=> new FileReturnDTO
+                    {
+                        FileId = f.FileId,
+                        FileSize = f.FileSize,
+                        FileType = f.FileType,
+                        FileUrl = f.FileUrl
+                    }).ToList(),
                 })
                 .OrderByDescending(p => p.PostedOn)
+                .AsSplitQuery()
                 .ToListAsync();
             return listings;
 
@@ -71,7 +79,7 @@ namespace Brokerless.Repositories
                     PropertyType = p.PropertyType,
                     Rent = p.Rent,
                     RentDuration = p.RentDuration,
-                    Tags = p.Tags.Select(t => t.TagValue).ToList(),
+                    Tags = p.Tags.Select(t => t.Tag.TagValue).ToList(),
                     CommercialDetails = p.CommercialDetails,
                     HostelDetails = p.HostelDetails,
                     HouseDetails = p.HouseDetails,
@@ -114,7 +122,8 @@ namespace Brokerless.Repositories
                     Name = u.FullName,
                     PhoneNumberVerified = u.PhoneNumberVerified,
                     ProfilePic = u.ProfileUrl,
-                    SubscriptionTemplateName = u.UserSubscription.SubscriptionTemplateName
+                    SubscriptionTemplateName = u.UserSubscription.SubscriptionTemplateName,
+                    ExpiresOn = u.UserSubscription.ExpiresOn
                 })
                 .FirstOrDefaultAsync();
             return profileDetails;

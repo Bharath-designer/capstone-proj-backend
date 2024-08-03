@@ -88,6 +88,7 @@ namespace Brokerless
             builder.Services.AddScoped(typeof(IPropertyService), typeof(PropertyService));
             builder.Services.AddScoped(typeof(IFileUploadService), typeof(FileUploadService));
             builder.Services.AddScoped(typeof(IAdminService), typeof(AdminService));
+            builder.Services.AddScoped(typeof(ITagService), typeof(TagService));
             #endregion
 
 
@@ -98,6 +99,8 @@ namespace Brokerless
             builder.Services.AddScoped(typeof(ITagRepository), typeof(TagRepository));
             builder.Services.AddScoped(typeof(IPropertyRepository), typeof(PropertyRepository));
             builder.Services.AddScoped(typeof(IConversationRepository), typeof(ConversationRepository));
+            builder.Services.AddScoped(typeof(IPropertyTagRepository), typeof(PropertyTagRepository));
+            builder.Services.AddScoped(typeof(IPropertyFileRepository), typeof(PropertyFileRepository));
             #endregion
 
             builder.Services.AddCors(options =>

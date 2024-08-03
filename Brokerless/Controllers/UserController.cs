@@ -441,6 +441,42 @@ namespace Brokerless.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, errorObject);
 
             }
+        }
+
+        [HttpGet]
+        [Route("analytics/{propertyId}")]
+        public async Task<IActionResult> GetPropertyAnalytics(int propertyId)
+        {
+            try
+            {
+                int userId = int.Parse(User.FindFirst("userId").Value.ToString());
+
+                var result = await _userService.GetPropertyAnalytics(userId, propertyId);
+
+                return Ok(result);
+            }
+            catch (PropertyNotFound ex)
+            {
+                var errorObject = new ErrorApiResponse
+                {
+                    ErrCode = 1011,
+                    Message = ex.Message
+                };
+
+                return BadRequest(errorObject);
+            }
+            catch (Exception ex)
+            {
+                await Console.Out.WriteLineAsync(ex.Message);
+                var errorObject = new ErrorApiResponse
+                {
+                    ErrCode = 500,
+                    Message = "Internal Server Error"
+                };
+
+                return StatusCode(StatusCodes.Status500InternalServerError, errorObject);
+
+            }
 
         }
 

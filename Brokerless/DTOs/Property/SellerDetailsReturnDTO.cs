@@ -6,5 +6,6 @@
         public string Name { get; set; }
         public string PhoneNumber { get; set; }
         public string CountryCode { get; set; }
+        public bool PhoneNumberVerified { get; set; }
     }
 }

@@ -28,10 +28,10 @@ namespace Brokerless.Services
             if (emailVerified)
             {
 
-                // Creating dummy users
-                //payload.Email = "user2@gmail.com";
-                //payload.Name = "User 2";
-                //payload.Picture = "https://image.lexica.art/full_jpg/7515495b-982d-44d2-9931-5a8bbbf27532";
+                //Creating dummy users
+                //payload.Email = "user1@gmail.com";
+                //payload.Name = "User 1";
+                //payload.Picture = "https://media.istockphoto.com/id/1393872009/photo/african-american-man-with-african-hairstyle-standing-over-isolated-pink-background.webp?b=1&s=170667a&w=0&k=20&c=Le8v3DqgLlmlHplW_1WgZL-g__tOipo31Cob_11VJSQ=";
 
 
                 User user = await _userRepository.GetUserByEmail(payload.Email);
@@ -48,13 +48,33 @@ namespace Brokerless.Services
 
                 var authReturnDTO = new AuthReturnDTO
                 {
-                    Token = Token
+                    Token = Token,
+                    ProfilePic = user.ProfileUrl,
+                    UserName = user.FullName,
+                    UserRole = user.UserRole
                 };
 
                 return authReturnDTO;
             }
 
             throw new GmailNotVerifiedException();
+        }
+
+        public async Task<VerifyReturnDTO> GetVerifyDetails(int userId)
+        {
+            User user = await _userRepository.GetById(userId);
+
+            if (user == null)
+            {
+                throw new UserNotFoundException();
+            } 
+
+            return new VerifyReturnDTO
+            {
+                ProfilePic = user.ProfileUrl,
+                UserRole = user.UserRole,
+                UserName= user.FullName
+            };
         }
     }
 }

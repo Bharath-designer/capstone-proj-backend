@@ -5,7 +5,7 @@ namespace Brokerless.DTOs.User
     public class UserMobileNumberUpdateDTO
     {
         [Required]
-        [RegularExpression(@"^\d{10}$", ErrorMessage = "Phone number must be exactly 10 digits.")]
+        [RegularExpression(@"^\d{10}$", ErrorMessage = "Phone number must be 10 digits.")]
         public string PhoneNumber {  get; set; }
         [Required]
         public string CountryCode { get; set; }

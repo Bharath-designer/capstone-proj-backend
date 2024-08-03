@@ -44,7 +44,7 @@ namespace Brokerless.Services
 
         public async Task<PropertyReturnDTO> GetAdminPropertyById(int propertyId)
         {
-            PropertyReturnDTO propertyReturnDTO = await _propertyRepository.GetPropertyWithSellerDetails(propertyId, true);
+            PropertyReturnDTO propertyReturnDTO = await _propertyRepository.GetPropertyWithSellerDetails(propertyId, true, true);
 
             if (propertyReturnDTO == null)
             {

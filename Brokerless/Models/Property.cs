@@ -26,7 +26,7 @@ namespace Brokerless.Models
         public PropertyStatus PropertyStatus { get; set; } = PropertyStatus.Active;
         public bool isApproved { get; set; } = false;
         public int SellerId { get; set; } // ForeignKey
-        public List<Tag> Tags { get; set; }
+        public List<PropertyTag> Tags { get; set; }
         public List<PropertyFile> Files { get; set; }
         public User Seller {  get; set; }
         public CommercialDetails CommercialDetails { get; set; }

@@ -10,7 +10,6 @@ namespace Brokerless.Controllers
 {
     [ApiController]
     [Route("/api/v1/auth/")]
-    [AllowAnonymous]
     public class AuthController: ControllerBase
     {
         private readonly IAuthService _authService;
@@ -21,6 +20,7 @@ namespace Brokerless.Controllers
 
         [HttpPost]
         [Route("google")]
+        [AllowAnonymous]
         public async Task<IActionResult> AuthenticateWithGoogle([FromBody]GoogleLoginDTO googleLoginDTO)
         {
             try
@@ -64,6 +64,39 @@ namespace Brokerless.Controllers
             {
                 await Console.Out.WriteLineAsync(ex.Message);
                                 var errorObject = new ErrorApiResponse
+                {
+                    ErrCode = 500,
+                    Message = "Internal Server Error"
+                };
+
+                return StatusCode(StatusCodes.Status500InternalServerError, errorObject);
+            }
+        }
+
+        [HttpGet]
+        [Route("verify")]
+        public async Task<IActionResult> VerifyUser()
+        {
+            try
+            {
+                int UserId = int.Parse(User.FindFirst("userId").Value.ToString());
+
+                var returnDTO = await _authService.GetVerifyDetails(UserId);
+                return Ok(returnDTO);
+            }
+            catch (UserNotFoundException ex)
+            {
+                var errorObject = new ErrorApiResponse
+                {
+                    ErrCode = 1009,
+                    Message = ex.Message
+                };
+                return BadRequest(errorObject);
+            }
+            catch (Exception ex)
+            {
+                await Console.Out.WriteLineAsync(ex.Message);
+                var errorObject = new ErrorApiResponse
                 {
                     ErrCode = 500,
                     Message = "Internal Server Error"

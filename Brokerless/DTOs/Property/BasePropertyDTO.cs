@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Brokerless.Enums;
 using Brokerless.Models;
+using Brokerless.Validations;
 
 namespace Brokerless.DTOs.Property
 {
@@ -30,7 +31,7 @@ namespace Brokerless.DTOs.Property
         public double? Rent { get; set; }
         public DurationType? RentDuration { get; set; }
         public double? Deposit { get; set; }
-        [Required]
+        [NoNullElements("The Tags list cannot contain null elements.")]
         public List<string> Tags { get; set; }
     }
 }

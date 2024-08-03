@@ -3,6 +3,7 @@ using Brokerless.DTOs.Admin;
 using Brokerless.DTOs.Property;
 using Brokerless.DTOs.User;
 using Brokerless.Enums;
+using Brokerless.Exceptions;
 using Brokerless.Interfaces.Repositories;
 using Brokerless.Models;
 using Microsoft.EntityFrameworkCore;
@@ -59,7 +60,7 @@ namespace Brokerless.Repositories
             if (propertySearchFilterDTO.Tags != null)
             {
                 baseQuery = baseQuery
-                    .Where(p => p.Tags.Any(t => propertySearchFilterDTO.Tags.Contains(t.TagValue)));
+                    .Where(p => p.Tags.Any(t => propertySearchFilterDTO.Tags.Contains(t.Tag.TagValue)));
             }
 
 
@@ -101,7 +102,7 @@ namespace Brokerless.Repositories
                 PropertyType = p.PropertyType,
                 Rent = p.Rent,
                 RentDuration = p.RentDuration,
-                Tags = p.Tags.Select(t => t.TagValue).ToList(),
+                Tags = p.Tags.Select(t => t.Tag.TagValue).ToList(),
                 CommercialDetails = p.CommercialDetails,
                 HostelDetails = p.HostelDetails,
                 HouseDetails = p.HouseDetails,
@@ -162,11 +163,15 @@ namespace Brokerless.Repositories
 
         }
 
-        public async Task<PropertyReturnDTO> GetPropertyWithSellerDetails(int propertyId, bool isPropertyDetailsAllowed)
+        public async Task<PropertyReturnDTO> GetPropertyWithSellerDetails(int propertyId, bool isPropertyDetailsAllowed, bool isAdmin)
         {
-            PropertyReturnDTO? propertyReturnDTO = await _context.Properties
-                .Where(p => p.isApproved)
-                .Where(p => p.PropertyId == propertyId)
+            var baseQuery = _context.Properties.AsQueryable();
+
+            if (isAdmin != true) { 
+                baseQuery = baseQuery.Where(p => p.isApproved);
+            }
+
+            var propertyReturnDTO = await baseQuery.Where(p => p.PropertyId == propertyId)
                 .Select(p => new PropertyReturnDTO
                 {
                     City = p.City,
@@ -183,7 +188,7 @@ namespace Brokerless.Repositories
                     PropertyType = p.PropertyType,
                     Rent = p.Rent,
                     RentDuration = p.RentDuration,
-                    Tags = p.Tags.Select(t => t.TagValue).ToList(),
+                    Tags = p.Tags.Select(t => t.Tag.TagValue).ToList(),
                     CommercialDetails = p.CommercialDetails,
                     HostelDetails = p.HostelDetails,
                     HouseDetails = p.HouseDetails,
@@ -206,7 +211,8 @@ namespace Brokerless.Repositories
                         SellerId = p.SellerId,
                         Name = p.Seller.FullName,
                         CountryCode = p.Seller.CountryCode,
-                        PhoneNumber = p.Seller.PhoneNumber
+                        PhoneNumber = p.Seller.PhoneNumber,
+                        PhoneNumberVerified= p.Seller.PhoneNumberVerified
                     } : null
                 }).FirstOrDefaultAsync();
 
@@ -215,6 +221,16 @@ namespace Brokerless.Repositories
 
         public async Task<List<PropertyViewedUserReturnDTO>> GetViewedUsersOfPropertyById(int userId, int propertyId)
         {
+            var propertyExists = await _context.Properties
+                .Where(p => p.SellerId == userId && p.PropertyId == propertyId)
+                .FirstOrDefaultAsync();
+
+
+            if (propertyExists == null)
+            {
+                throw new PropertyNotFound();
+            }
+
             var usersList = await _context.PropertyUserViewed
                 .Where(puv => puv.PropertyId == propertyId && puv.Property.SellerId == userId)
                 .Select(puv => new PropertyViewedUserReturnDTO
@@ -224,8 +240,10 @@ namespace Brokerless.Repositories
                     Email = puv.User.Email,
                     MobileNumber = puv.User.PhoneNumber,
                     UserId = puv.User.UserId,
-                    IsPhoneNumberVerified = puv.User.PhoneNumberVerified
+                    IsPhoneNumberVerified = puv.User.PhoneNumberVerified,
+                    ViewedOn = puv.CreatedOn
                 })
+                .OrderByDescending(u => u.ViewedOn)
                 .ToListAsync();
 
             return usersList;
@@ -250,6 +268,7 @@ namespace Brokerless.Repositories
         {
             List<PropertyReturnDTO> userRequestedProperties = await _context.PropertyUserViewed
                 .Where(puv => puv.UserId == userId)
+                .OrderByDescending(p=>p.CreatedOn)
                 .Select(p => new PropertyReturnDTO
                 {
                     City = p.Property.City,
@@ -266,7 +285,6 @@ namespace Brokerless.Repositories
                     PropertyType = p.Property.PropertyType,
                     Rent = p.Property.Rent,
                     RentDuration = p.Property.RentDuration,
-                    Tags = p.Property.Tags.Select(t => t.TagValue).ToList(),
                     CommercialDetails = p.Property.CommercialDetails,
                     HostelDetails = p.Property.HostelDetails,
                     HouseDetails = p.Property.HouseDetails,
@@ -293,7 +311,7 @@ namespace Brokerless.Repositories
         {
             Property? property = await _context.Properties
                 .Where(p => p.PropertyId == propertyId && p.SellerId == userId)
-                .Select(p=> new Property
+                .Select(p => new Property
                 {
                     City = p.City,
                     Currency = p.Currency,
@@ -309,7 +327,7 @@ namespace Brokerless.Repositories
                     PropertyType = p.PropertyType,
                     Rent = p.Rent,
                     RentDuration = p.RentDuration,
-                    Tags = p.Tags.ToList(),
+                    Tags = p.Tags,
                     CommercialDetails = p.CommercialDetails,
                     HostelDetails = p.HostelDetails,
                     HouseDetails = p.HouseDetails,
@@ -319,12 +337,61 @@ namespace Brokerless.Repositories
                     LocationLat = p.LocationLat,
                     LocationLon = p.LocationLon,
                     PropertyStatus = p.PropertyStatus,
-                    Files = p.Files.ToList(),
+                    Files = p.Files,
                     isApproved = p.isApproved,
                     SellerId = p.SellerId
                 })
                 .FirstOrDefaultAsync();
             return property;
         }
+
+        public async Task<PropertyAnalyticsResultDTO> GetPropertyAnalytics(int userId, int propertyId)
+        {
+            var last7Days = DateTime.Now.Date.AddDays(-6);
+
+            var propertyExists = await _context.Properties
+                    .Where(p => p.SellerId == userId && p.PropertyId == propertyId)
+                    .FirstOrDefaultAsync();
+
+
+            if (propertyExists == null)
+            {
+                throw new PropertyNotFound();
+            }
+
+            var totalViews = await _context.PropertyUserViewed
+                .Where(v => v.PropertyId == propertyId)
+                .CountAsync();
+
+            var last7DaysAnalytics = await _context.PropertyUserViewed
+                .Where(v => v.PropertyId == propertyId && v.CreatedOn >= last7Days)
+                .GroupBy(v => v.CreatedOn.Date)
+                .Select(g => new PropertyAnalyticsDTO
+                {
+                    Date = g.Key,
+                    Visits = g.Count()
+                })
+                .ToListAsync();
+
+            var resultAnalytics = Enumerable.Range(0, 7)
+                .Select(i => last7Days.AddDays(i).Date)
+                .GroupJoin(
+                    last7DaysAnalytics,
+                    date => date,
+                    analytics => analytics.Date,
+                    (date, analytics) => new PropertyAnalyticsDTO
+                    {
+                        Date = date,
+                        Visits = analytics.FirstOrDefault()?.Visits ?? 0
+                    })
+                .ToList();
+
+            return new PropertyAnalyticsResultDTO
+            {
+                TotalViews = totalViews,
+                Last7DaysAnalytics = resultAnalytics
+            };
+        }
+
     }
 }

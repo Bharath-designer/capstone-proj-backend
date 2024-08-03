@@ -55,7 +55,7 @@ namespace Brokerless.Repositories
 
         public async Task<List<ConversationListReturnDTO>> GetUserConversation(int userId, int pageNumber)
         {
-            int PAGE_SIZE = 10;
+            int PAGE_SIZE = 5;
 
             if (pageNumber <=0) pageNumber = 1;
 

@@ -20,8 +20,6 @@ namespace Brokerless.DTOs.Property
         [Required]
         public string State { get; set; }
         [Required]
-        public string Description { get; set; }
-        [Required]
         public bool? PriceNegotiable { get; set; }
         [Required]
         public Currency? Currency { get; set; }

@@ -11,6 +11,7 @@
         public int AvailableListingCount { get; set; }
         public int AvailableSellerViewCount { get; set; }
         public string SubscriptionTemplateName { get; set; }
+        public DateTime? ExpiresOn { get; set; }
 
     }
 }

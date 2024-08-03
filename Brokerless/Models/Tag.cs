@@ -6,6 +6,6 @@ namespace Brokerless.Models
     {
         [Key]
         public string TagValue { get; set; }
-        public List<Property> Properties { get; set; }
+        public List<PropertyTag> Properties { get; set; }
     }
 }

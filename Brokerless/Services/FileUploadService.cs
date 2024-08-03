@@ -5,6 +5,7 @@ using Azure;
 using Brokerless.Models;
 using Brokerless.Enums;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Brokerless.Exceptions;
 
 namespace Brokerless.Services
 {
@@ -23,6 +24,27 @@ namespace Brokerless.Services
         public async Task<List<PropertyFile>> UploadFilesToAzure(List<IFormFile> filesToUpload)
         {
             List<PropertyFile> files = new List<PropertyFile>();
+            List<string> allowedFileTypes = new List<string> { "video/mp4", "image/jpeg", "image/jpg", "image/png" };
+            long maxFileSizeInBytes = 20 * 1024 * 1024; // 5 MB
+
+
+
+            foreach (var file in filesToUpload)
+            {
+                long fileSize = file.Length;
+                string fileContentType = file.ContentType;
+
+                if (fileSize > maxFileSizeInBytes)
+                {
+                    throw new FileRuleException($"File size exceeds the maximum limit of 20 MB. File: {file.FileName}, Size: {fileSize} bytes");
+                }
+                if (!allowedFileTypes.Contains(fileContentType))
+                {
+                    throw new FileRuleException($"Invalid file type. Only mp4, jpg, jpeg, and png files are allowed. File: {file.FileName}, Type: {fileContentType}");
+                }
+
+            }
+
             foreach (var file in filesToUpload)
             {
                 string url = await UploadFileToAzure(file);

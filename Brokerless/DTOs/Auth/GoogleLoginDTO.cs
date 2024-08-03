@@ -1,7 +1,10 @@
-﻿namespace Brokerless.DTOs.Auth
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Brokerless.DTOs.Auth
 {
     public class GoogleLoginDTO
     {
-        public string Token { get; set; }
+        [Required]
+        public string? Token { get; set; }
     }
 }

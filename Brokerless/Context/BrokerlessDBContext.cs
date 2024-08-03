@@ -28,6 +28,7 @@ namespace Brokerless.Context
         public DbSet<User> Users { get; set; }
         public DbSet<UserSubscription> UserSubscriptions { get; set; }
         public DbSet<PropertyUserViewed> PropertyUserViewed { get; set; }
+        public DbSet<PropertyTag> PropertyTag { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -55,12 +56,6 @@ namespace Brokerless.Context
                 .WithMany(u=>u.Transactions)
                 .HasForeignKey(t => t.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
-
-
-            modelBuilder.Entity<Tag>()
-                .HasMany(t => t.Properties)
-                .WithMany(p => p.Tags)
-                .UsingEntity(j => j.ToTable("PropertyTag"));
 
 
             modelBuilder.Entity<PropertyFile>()
@@ -95,7 +90,7 @@ namespace Brokerless.Context
             modelBuilder.Entity<PropertyUserViewed>()
             .HasKey(pt => new { pt.UserId, pt.PropertyId});
 
-
+            
 
             modelBuilder.Entity<PropertyUserViewed>()
                 .HasOne(p => p.Property)
@@ -109,6 +104,32 @@ namespace Brokerless.Context
                .HasForeignKey(p => p.UserId)
                .OnDelete(DeleteBehavior.Restrict);
 
+            modelBuilder.Entity<PropertyUserViewed>()
+                .HasIndex(p => p.UserId);
+
+            modelBuilder.Entity<PropertyUserViewed>()
+                .HasIndex(p => p.CreatedOn);
+
+
+
+            modelBuilder.Entity<PropertyTag>()
+            .HasKey(pt => new { pt.PropertyId, pt.TagValue });
+
+            modelBuilder.Entity<PropertyTag>()
+                .HasOne(p => p.Property)
+                .WithMany(p => p.Tags)
+                .HasForeignKey(p => p.PropertyId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+
+            modelBuilder.Entity<PropertyTag>()
+                .HasOne(p => p.Tag)
+                .WithMany(p => p.Properties)
+                .HasForeignKey(p => p.TagValue)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<PropertyTag>()
+            .HasIndex(t => t.TagValue);
 
             modelBuilder.Entity<SubscriptionTemplate>()
                 .HasData(

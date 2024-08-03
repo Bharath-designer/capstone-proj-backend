@@ -1,4 +1,6 @@
-﻿using Brokerless.DTOs.Property;
+﻿using System.Linq;
+using Azure;
+using Brokerless.DTOs.Property;
 using Brokerless.Enums;
 using Brokerless.Exceptions;
 using Brokerless.Interfaces.Repositories;
@@ -14,13 +16,17 @@ namespace Brokerless.Services
         private readonly ITagRepository _tagRepository;
         private readonly IPropertyRepository _propertyRepository;
         private readonly IFileUploadService _fileUploadService;
+        private readonly IPropertyTagRepository _propertyTagRepository;
+        private readonly IPropertyFileRepository _propertyFileRepository;
 
-        public PropertyService(IUserRepository userRepository, ITagRepository tagRepository, IPropertyRepository propertyRepository, IFileUploadService fileUploadService)
+        public PropertyService(IUserRepository userRepository, ITagRepository tagRepository, IPropertyRepository propertyRepository, IFileUploadService fileUploadService, IPropertyTagRepository propertyTagRepository, IPropertyFileRepository propertyFileRepository)
         {
             _userRepository = userRepository;
             _tagRepository = tagRepository;
             _propertyRepository = propertyRepository;
             _fileUploadService = fileUploadService;
+            _propertyTagRepository = propertyTagRepository;
+            _propertyFileRepository = propertyFileRepository;
         }
 
 
@@ -74,7 +80,7 @@ namespace Brokerless.Services
                 else property.RentDuration = basePropertyDTO.RentDuration;
             }
 
-            var tags = new List<Tag>();
+            var tags = new List<PropertyTag>();
 
             foreach (var tagName in basePropertyDTO.Tags)
             {
@@ -84,7 +90,7 @@ namespace Brokerless.Services
                     tag = new Tag { TagValue = tagName };
                     await _tagRepository.Add(tag);
                 }
-                tags.Add(tag);
+                tags.Add(new PropertyTag { Tag = tag });
             }
 
 
@@ -175,7 +181,6 @@ namespace Brokerless.Services
                         property.LandDetails = new LandDetails
                         {
                             Length = (double)landDetailsDTO.Length,
-                            LandDetailsId = (int)landDetailsDTO.MeasurementUnit,
                             MeasurementUnit = (MeasurementUnit)landDetailsDTO.MeasurementUnit,
                             Width = (double)landDetailsDTO.Width,
                             ZoningType = (ZoningType)landDetailsDTO.ZoningType
@@ -219,7 +224,7 @@ namespace Brokerless.Services
                 }
             }
 
-            PropertyReturnDTO propertyReturnDTO = await _propertyRepository.GetPropertyWithSellerDetails(propertyId, isPropertyDetailsAllowed);
+            PropertyReturnDTO propertyReturnDTO = await _propertyRepository.GetPropertyWithSellerDetails(propertyId, isPropertyDetailsAllowed, false);
 
             if (propertyReturnDTO == null)
             {
@@ -237,6 +242,11 @@ namespace Brokerless.Services
             if (user == null)
             {
                 throw new UserNotFoundException();
+            }
+
+            if (user.PhoneNumberVerified == false)
+            {
+                throw new MobileNotVerifiedException();
             }
 
             PropertyUserViewed propertyUserViewed = await _propertyRepository.GetPropertyWithViewedUserById(userId, (int)requestPropertyDTO.PropertyId);
@@ -284,6 +294,8 @@ namespace Brokerless.Services
                 throw new PropertyNotFound();
             }
 
+            Console.WriteLine("file count------------>"+ formFiles.Count);
+
             if (basePropertyDTO.ListingType == ListingType.Sale)
             {
                 if (basePropertyDTO.Price == null)
@@ -305,19 +317,25 @@ namespace Brokerless.Services
                 else property.RentDuration = basePropertyDTO.RentDuration;
             }
 
-            var tags = property.Tags;
 
             if (basePropertyDTO.TagsToBeAdded != null)
             {
                 foreach (var tagName in basePropertyDTO.TagsToBeAdded)
                 {
-                    var tag = tags.FirstOrDefault(t=>t.TagValue == tagName);
-                    if (tag == null)
+                    PropertyTag? propertyTag = property.Tags.FirstOrDefault(p => p.TagValue == tagName);
+                    if (propertyTag == null)
                     {
-                        tag = new Tag { TagValue = tagName };
-                        await _tagRepository.Add(tag);
+                        Tag tag = await _tagRepository.GetById(tagName);
+
+                        if (tag == null)
+                        {
+                            tag = new Tag { TagValue = tagName };
+                            await _tagRepository.Add(tag);
+                        }
+                        propertyTag = new PropertyTag { TagValue = tagName, PropertyId = property.PropertyId };
+
+                        await _propertyTagRepository.Add(propertyTag);
                     }
-                    tags.Add(tag);
                 }
             }
 
@@ -325,28 +343,39 @@ namespace Brokerless.Services
             {
                 foreach (var tagName in basePropertyDTO.TagsToBeRemoved)
                 {
-                    Tag? tag = tags.FirstOrDefault(t => t.TagValue == tagName);
+                    PropertyTag? tag = property.Tags.FirstOrDefault(tg => tg.TagValue == tagName);
                     if (tag != null)
                     {
-                        tags.Remove(tag);
+                        await _propertyTagRepository.Delete(tag);
                     }
                 }
             }
+
+
 
             if (basePropertyDTO.FilesToBeRemoved != null)
             {
                 foreach (var fileUrl in basePropertyDTO.FilesToBeRemoved)
                 {
-                    PropertyFile? file = property.Files.FirstOrDefault(pf=>pf.FileUrl == fileUrl);
+                    PropertyFile? file = property.Files.FirstOrDefault(pf => pf.FileUrl == fileUrl);
                     if (file != null)
                     {
-                        property.Files.Remove(file);
+                        await _propertyFileRepository.Delete(file);
                         await _fileUploadService.DeleteFileFromAzure(fileUrl);
                     }
                 }
             }
 
-            property.Files = await _fileUploadService.UploadFilesToAzure(formFiles);
+            if (formFiles != null && formFiles.Count > 0)
+            {
+                List<PropertyFile>  propertyFiles = await _fileUploadService.UploadFilesToAzure(formFiles);
+                foreach (var propertyFile in propertyFiles)
+                {
+                    propertyFile.PropertyId = property.PropertyId;
+                    await _propertyFileRepository.Add(propertyFile);
+                }
+            }
+
 
             property.City = basePropertyDTO.City;
             property.State = basePropertyDTO.State;
@@ -357,6 +386,7 @@ namespace Brokerless.Services
             property.LocationLon = (double)basePropertyDTO.LocationLon;
             property.PriceNegotiable = (bool)basePropertyDTO.PriceNegotiable;
             property.PropertyStatus = (PropertyStatus)basePropertyDTO.PropertyStatus;
+
             try
             {
                 switch (property.PropertyType)
@@ -365,7 +395,6 @@ namespace Brokerless.Services
                         if (property.PropertyCategory == PropertyCategory.House)
                         {
                             UpdateHouseDetailsDTO houseDetailsDTO = (UpdateHouseDetailsDTO)basePropertyDTO;
-
                             property.HouseDetails.CarParking = (bool)houseDetailsDTO.CarParking;
                             property.HouseDetails.Electricity = (Electricity)houseDetailsDTO.Electricity;
                             property.HouseDetails.FloorCount = (int)houseDetailsDTO.FloorCount;
@@ -424,8 +453,7 @@ namespace Brokerless.Services
             }
             catch (InvalidCastException ex)
             {
-                throw new CustomModelFieldError($"Invalid values for " +
-                    $"'{property.PropertyType}{(property.PropertyCategory != null ? $" - {property.PropertyCategory}" : "")}' type");
+                throw new CustomModelFieldError($"Invalid values for '{property.PropertyType}{(property.PropertyCategory != null ? $" - {property.PropertyCategory}" : "")}' type");
             }
             catch (Exception ex)
             {
@@ -434,8 +462,8 @@ namespace Brokerless.Services
             }
 
             await _propertyRepository.Update(property);
-
         }
+
 
     }
 }
