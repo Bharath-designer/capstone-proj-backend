@@ -29,9 +29,9 @@ namespace Brokerless.Services
             {
 
                 //Creating dummy users
-                //payload.Email = "user1@gmail.com";
-                //payload.Name = "User 1";
-                //payload.Picture = "https://media.istockphoto.com/id/1393872009/photo/african-american-man-with-african-hairstyle-standing-over-isolated-pink-background.webp?b=1&s=170667a&w=0&k=20&c=Le8v3DqgLlmlHplW_1WgZL-g__tOipo31Cob_11VJSQ=";
+                //payload.Email = "user3@gmail.com";
+                //payload.Name = "User 3";
+                //payload.Picture = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT16eO5W8VPjVFrkvG8n_2FQKjByMcbLtBF4A&s";
 
 
                 User user = await _userRepository.GetUserByEmail(payload.Email);

@@ -444,7 +444,6 @@ namespace Brokerless.Services
                     case PropertyType.Land:
                         UpdateLandDetailsDTO landDetailsDTO = (UpdateLandDetailsDTO)basePropertyDTO;
                         property.LandDetails.Length = (double)landDetailsDTO.Length;
-                        property.LandDetails.LandDetailsId = (int)landDetailsDTO.MeasurementUnit;
                         property.LandDetails.MeasurementUnit = (MeasurementUnit)landDetailsDTO.MeasurementUnit;
                         property.LandDetails.Width = (double)landDetailsDTO.Width;
                         property.LandDetails.ZoningType = (ZoningType)landDetailsDTO.ZoningType;
