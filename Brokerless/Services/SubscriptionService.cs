@@ -57,10 +57,18 @@ namespace Brokerless.Services
             
             if (expiresOn == null) return false;
 
-            if (expiresOn < DateTime.Now) return true;
+            if (expiresOn < GetIndianTime()) return true;
 
             return false;
 
+        }
+
+        private DateTime GetIndianTime()
+        {
+            DateTime utcNow = DateTime.UtcNow;
+            TimeZoneInfo istTimeZone = TimeZoneInfo.FindSystemTimeZoneById("India Standard Time");
+            DateTime istNow = TimeZoneInfo.ConvertTimeFromUtc(utcNow, istTimeZone);
+            return istNow;
         }
     }
 }

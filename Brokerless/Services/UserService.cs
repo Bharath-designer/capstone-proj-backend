@@ -35,7 +35,7 @@ namespace Brokerless.Services
                 AvailableListingCount = template.MaxListingCount,
                 AvailableSellerViewCount = template.MaxSellerViewCount,
                 ExpiresOn = null,
-                SubscribedOn = DateTime.Now,
+                SubscribedOn = GetIndianTime(),
                 SubscriptionTemplate = template,
             };
 
@@ -60,9 +60,9 @@ namespace Brokerless.Services
 
             SubscriptionTemplate exisitingSubscription = await _subscriptionTemplateRepository.GetById(userSubscription.SubscriptionTemplateName);
 
-            userSubscription.SubscribedOn = DateTime.Now;
+            userSubscription.SubscribedOn = GetIndianTime();
 
-            if (userSubscription.ExpiresOn > DateTime.Now || userSubscription.ExpiresOn == null)
+            if (userSubscription.ExpiresOn > GetIndianTime() || userSubscription.ExpiresOn == null)
             {
                 if (userSubscription.AvailableListingCount == 0)
                 {
@@ -92,7 +92,7 @@ namespace Brokerless.Services
                 userSubscription.AvailableSellerViewCount = subscriptionTemplate.MaxSellerViewCount;
             }
 
-            userSubscription.ExpiresOn = DateTime.Now.AddDays((double)subscriptionTemplate.Validity);
+            userSubscription.ExpiresOn = GetIndianTime().AddDays((double)subscriptionTemplate.Validity);
             userSubscription.SubscriptionTemplate = subscriptionTemplate;
 
             await _userRepository.Update(userWithSubscription);
@@ -104,7 +104,7 @@ namespace Brokerless.Services
         {
             if (expiresOn == null || totalValidity == null) return limitsRemaining;
 
-            int daysRemaining = (expiresOn.Value - DateTime.Now).Days;
+            int daysRemaining = (expiresOn.Value - GetIndianTime()).Days;
 
             double percentage = (double)((double)daysRemaining / totalValidity);
 
@@ -174,7 +174,7 @@ namespace Brokerless.Services
                 {
                     Users = new List<User> { sender, receiver },
                     HasUnreadMessage = true,
-                    LastUpdatedOn = DateTime.Now,
+                    LastUpdatedOn = GetIndianTime(),
                     LastConversationBy = userId
                 };
                 await _conversationRepository.Add(conversation);
@@ -204,7 +204,7 @@ namespace Brokerless.Services
             }
 
             conversation.HasUnreadMessage = true;
-            conversation.LastUpdatedOn = DateTime.Now;
+            conversation.LastUpdatedOn = GetIndianTime();
             conversation.LastConversationBy = userId;
             conversation.Chats = new List<Chat> { new Chat {
                 Message = createMessageDTO.Message,
@@ -294,7 +294,7 @@ namespace Brokerless.Services
                     {
                         Users = new List<User> { sender, receiver },
                         HasUnreadMessage = true,
-                        LastUpdatedOn = DateTime.Now,
+                        LastUpdatedOn = GetIndianTime(),
                         LastConversationBy = userId
                     };
                     await _conversationRepository.Add(conversation);
@@ -319,6 +319,14 @@ namespace Brokerless.Services
         {
             PropertyAnalyticsResultDTO result = await _propertyRepository.GetPropertyAnalytics(userId, propertyId);
             return result;
+        }
+
+        private DateTime GetIndianTime()
+        {
+            DateTime utcNow = DateTime.UtcNow;
+            TimeZoneInfo istTimeZone = TimeZoneInfo.FindSystemTimeZoneById("India Standard Time");
+            DateTime istNow = TimeZoneInfo.ConvertTimeFromUtc(utcNow, istTimeZone);
+            return istNow;
         }
     }
 }

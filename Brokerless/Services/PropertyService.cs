@@ -18,8 +18,9 @@ namespace Brokerless.Services
         private readonly IFileUploadService _fileUploadService;
         private readonly IPropertyTagRepository _propertyTagRepository;
         private readonly IPropertyFileRepository _propertyFileRepository;
+        private readonly IEmailService _emailService;
 
-        public PropertyService(IUserRepository userRepository, ITagRepository tagRepository, IPropertyRepository propertyRepository, IFileUploadService fileUploadService, IPropertyTagRepository propertyTagRepository, IPropertyFileRepository propertyFileRepository)
+        public PropertyService(IUserRepository userRepository, ITagRepository tagRepository, IPropertyRepository propertyRepository, IFileUploadService fileUploadService, IPropertyTagRepository propertyTagRepository, IPropertyFileRepository propertyFileRepository, IEmailService emailService)
         {
             _userRepository = userRepository;
             _tagRepository = tagRepository;
@@ -27,6 +28,7 @@ namespace Brokerless.Services
             _fileUploadService = fileUploadService;
             _propertyTagRepository = propertyTagRepository;
             _propertyFileRepository = propertyFileRepository;
+            _emailService = emailService;
         }
 
 
@@ -282,8 +284,12 @@ namespace Brokerless.Services
 
             user.UserSubscription.AvailableSellerViewCount--;
 
-            await _userRepository.Update(user);
+            string sellerEmail = await _propertyRepository.GetPropertySellerEmail(property.PropertyId);
 
+            await _userRepository.Update(user);
+            string subject = "New User requested your Property Details";
+            string msg = $"Your property details of type '{property.PropertyType}' have been requested by {user.FullName}";
+            await _emailService.SendEmail(sellerEmail, subject, msg);
         }
 
         public async Task UpdateProperty(int userId, UpdateBasePropertyDTO basePropertyDTO, List<IFormFile> formFiles)
@@ -293,8 +299,6 @@ namespace Brokerless.Services
             {
                 throw new PropertyNotFound();
             }
-
-            Console.WriteLine("file count------------>"+ formFiles.Count);
 
             if (basePropertyDTO.ListingType == ListingType.Sale)
             {

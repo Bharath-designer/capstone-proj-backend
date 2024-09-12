@@ -89,6 +89,7 @@ namespace Brokerless
             builder.Services.AddScoped(typeof(IFileUploadService), typeof(FileUploadService));
             builder.Services.AddScoped(typeof(IAdminService), typeof(AdminService));
             builder.Services.AddScoped(typeof(ITagService), typeof(TagService));
+            builder.Services.AddScoped(typeof(IEmailService), typeof(EmailService));
             #endregion
 
 

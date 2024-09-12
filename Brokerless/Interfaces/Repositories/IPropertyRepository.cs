@@ -14,5 +14,6 @@ namespace Brokerless.Interfaces.Repositories
         public Task<List<PropertyReturnDTO>> GetUserRequestedProperties(int userId);
         public Task<Property> GetPropertyOfSellerByPropertyIdWithTagsAndFiles(int userId, int propertyId);
         public Task<PropertyAnalyticsResultDTO> GetPropertyAnalytics(int userId, int propertyId);
+        public Task<string> GetPropertySellerEmail(int propertyId);
     }
 }

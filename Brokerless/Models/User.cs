@@ -7,7 +7,7 @@ namespace Brokerless.Models
     {
         [Key]
         public int UserId { get; set; }
-        public DateTime CreatedOn { get; set; } = DateTime.Now;
+        public DateTime CreatedOn { get; set; }
         public UserRole UserRole { get; set; }
         public string Email { get; set; }
         public string FullName { get; set; }
@@ -20,6 +20,14 @@ namespace Brokerless.Models
         public List<Property> Listings { get; set; }
         public List<Conversation> Conversations { get; set; }
         public List<PropertyUserViewed> PropertiesViewed { get; set; }
+
+        public User()
+        {
+            DateTime utcNow = DateTime.UtcNow;
+            TimeZoneInfo istTimeZone = TimeZoneInfo.FindSystemTimeZoneById("India Standard Time");
+            DateTime istNow = TimeZoneInfo.ConvertTimeFromUtc(utcNow, istTimeZone);
+            CreatedOn = istNow;
+        }
 
     }
 }

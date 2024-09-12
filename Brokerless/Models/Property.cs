@@ -22,7 +22,7 @@ namespace Brokerless.Models
         public double? Rent { get; set; }
         public DurationType? RentDuration { get; set; }
         public double? Deposit { get; set; }
-        public DateTime PostedOn { get; set; } = DateTime.Now;
+        public DateTime PostedOn { get; set; }
         public PropertyStatus PropertyStatus { get; set; } = PropertyStatus.Active;
         public bool isApproved { get; set; } = false;
         public int SellerId { get; set; } // ForeignKey
@@ -35,5 +35,13 @@ namespace Brokerless.Models
         public LandDetails  LandDetails { get; set; }
         public ProductDetails ProductDetails { get; set; }
         public List<PropertyUserViewed> UsersViewed { get; set; }
+
+        public Property()
+        {
+            DateTime utcNow = DateTime.UtcNow;
+            TimeZoneInfo istTimeZone = TimeZoneInfo.FindSystemTimeZoneById("India Standard Time");
+            DateTime istNow = TimeZoneInfo.ConvertTimeFromUtc(utcNow, istTimeZone);
+            PostedOn = istNow;
+        }
     }
 }

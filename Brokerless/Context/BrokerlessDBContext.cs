@@ -110,6 +110,8 @@ namespace Brokerless.Context
             modelBuilder.Entity<PropertyUserViewed>()
                 .HasIndex(p => p.CreatedOn);
 
+            modelBuilder.Entity<PropertyFile>()
+                .HasIndex(p => p.PropertyId);
 
 
             modelBuilder.Entity<PropertyTag>()
@@ -130,6 +132,11 @@ namespace Brokerless.Context
 
             modelBuilder.Entity<PropertyTag>()
             .HasIndex(t => t.TagValue);
+
+            modelBuilder.Entity<User>()
+            .HasIndex(u => u.Email)
+            .IsUnique();
+
 
             modelBuilder.Entity<SubscriptionTemplate>()
                 .HasData(
@@ -163,6 +170,7 @@ namespace Brokerless.Context
                     Currency = Currency.INR,
                     Price = 999
                 }
+            
                 );
 
 

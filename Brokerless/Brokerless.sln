@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.9.34723.18
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Brokerless", "Brokerless.csproj", "{743A59EA-A788-4F9E-9CCC-98EF5986E577}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Brokerless", "Brokerless.csproj", "{743A59EA-A788-4F9E-9CCC-98EF5986E577}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BrokerlessTest", "..\BrokerlessTest\BrokerlessTest.csproj", "{057C59D8-EE0A-4C79-B0E5-090CD0CE5BE7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{743A59EA-A788-4F9E-9CCC-98EF5986E577}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{743A59EA-A788-4F9E-9CCC-98EF5986E577}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{743A59EA-A788-4F9E-9CCC-98EF5986E577}.Release|Any CPU.Build.0 = Release|Any CPU
+		{057C59D8-EE0A-4C79-B0E5-090CD0CE5BE7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{057C59D8-EE0A-4C79-B0E5-090CD0CE5BE7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{057C59D8-EE0A-4C79-B0E5-090CD0CE5BE7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{057C59D8-EE0A-4C79-B0E5-090CD0CE5BE7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

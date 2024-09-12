@@ -10,6 +10,13 @@ namespace Brokerless.Models
         public int UserId { get; set; }
         public User User { get; set; }
 
-        public DateTime CreatedOn { get; set; } = DateTime.Now;
+        public DateTime CreatedOn { get; set; }
+
+        public PropertyUserViewed() {
+            DateTime utcNow = DateTime.UtcNow;
+            TimeZoneInfo istTimeZone = TimeZoneInfo.FindSystemTimeZoneById("India Standard Time");
+            DateTime istNow = TimeZoneInfo.ConvertTimeFromUtc(utcNow, istTimeZone);
+            CreatedOn = istNow;
+        }
     }
 }

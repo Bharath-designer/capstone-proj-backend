@@ -123,6 +123,15 @@ namespace Brokerless.Repositories
             return propertyReturnDTOs;
         }
 
+        public async Task<string> GetPropertySellerEmail(int propertyId)
+        {
+            string? email = await _context.Properties
+                .Where(p => p.PropertyId == propertyId)
+                .Select(p => p.Seller.Email)
+                .FirstOrDefaultAsync();
+
+            return email;
+        }
 
         public async Task<PropertyUserViewed> GetPropertyWithViewedUserById(int userId, int propertyId)
         {
@@ -212,7 +221,8 @@ namespace Brokerless.Repositories
                         Name = p.Seller.FullName,
                         CountryCode = p.Seller.CountryCode,
                         PhoneNumber = p.Seller.PhoneNumber,
-                        PhoneNumberVerified= p.Seller.PhoneNumberVerified
+                        PhoneNumberVerified= p.Seller.PhoneNumberVerified,
+                        Email = p.Seller.Email
                     } : null
                 }).FirstOrDefaultAsync();
 
@@ -294,6 +304,7 @@ namespace Brokerless.Repositories
                     LocationLat = p.Property.LocationLat,
                     LocationLon = p.Property.LocationLon,
                     PropertyStatus = p.Property.PropertyStatus,
+                    IsApproved = p.Property.isApproved,
                     Files = p.Property.Files.Select(f => new FileReturnDTO
                     {
                         FileId = f.FileId,
@@ -347,7 +358,11 @@ namespace Brokerless.Repositories
 
         public async Task<PropertyAnalyticsResultDTO> GetPropertyAnalytics(int userId, int propertyId)
         {
-            var last7Days = DateTime.Now.Date.AddDays(-6);
+            DateTime utcNow = DateTime.UtcNow;
+            TimeZoneInfo istTimeZone = TimeZoneInfo.FindSystemTimeZoneById("India Standard Time");
+            DateTime istNow = TimeZoneInfo.ConvertTimeFromUtc(utcNow, istTimeZone);
+
+            var last7Days = istNow.Date.AddDays(-6);
 
             var propertyExists = await _context.Properties
                     .Where(p => p.SellerId == userId && p.PropertyId == propertyId)
